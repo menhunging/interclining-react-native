@@ -1,3 +1,4 @@
+import { STORAGE_KEYS } from "@/constants/constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import axios from "axios";
@@ -11,7 +12,7 @@ const api: AxiosInstance = axios.create({
 });
 
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-  const token = await AsyncStorage.getItem("tokenCLEANING");
+  const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "./../../api/api";
 
+import { STORAGE_KEYS } from "@/constants/constants";
 import type { AuthMessage, AuthResponse, AuthState } from "@/types/auth/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -32,7 +33,7 @@ export const loginUser = createAsyncThunk<
     }
 
     if (message.token) {
-      AsyncStorage.setItem("tokenCLEANING", message.token);
+      AsyncStorage.setItem(STORAGE_KEYS.TOKEN, message.token);
     }
 
     return message;
@@ -73,7 +74,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout(state) {
-      AsyncStorage.removeItem("tokenCLEANING");
+      AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
       state.isAuthenticated = false;
       state.error = null;
       state.userInfo = {
@@ -96,6 +97,7 @@ const authSlice = createSlice({
         state.userInfo.role = action.payload.role;
         state.isAuthenticated = true;
         state.loading = false;
+        state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.error = action.payload as string;
@@ -117,7 +119,7 @@ const authSlice = createSlice({
       .addCase(authUser.rejected, (state, action) => {
         state.error = action.payload as string;
         state.isAuthenticated = false;
-        AsyncStorage.removeItem("tokenCLEANING");
+        AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
         state.loading = false;
       });
   },

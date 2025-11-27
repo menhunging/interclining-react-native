@@ -1,15 +1,14 @@
 import ButtonUI from "@/components/ui/Button/ButtonUI";
 import AuthInput from "@/components/ui/Inputs/AuthInput/AuthInput";
+import { COLORS } from "@/constants/colors";
 import { loginUser } from "@/store/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { IAuthFormData } from "@/types/typesMobile/auth";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 const AuthForm: React.FC = () => {
-  const { loading, error, isAuthenticated } = useAppSelector(
-    (state) => state.auth
-  );
+  const { loading, error } = useAppSelector((state) => state.auth);
 
   const dispatch = useAppDispatch();
 
@@ -65,7 +64,9 @@ const AuthForm: React.FC = () => {
         />
       </View>
 
-      <ButtonUI onPress={handleSubmit(onSubmit)} disabled={!isValid}>
+      {error && <Text style={styles.errorText}>{error}</Text>}
+
+      <ButtonUI onPress={handleSubmit(onSubmit)} disabled={!isValid || loading}>
         Вход
       </ButtonUI>
     </View>
@@ -88,6 +89,13 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 12,
     width: "100%",
+  },
+  errorText: {
+    color: COLORS.red,
+    fontSize: 14,
+    fontFamily: "Manrope-SemiBold",
+    textAlign: "center",
+    marginBottom: 12,
   },
 });
 
