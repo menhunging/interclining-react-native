@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 // import appealsReducer from "./slices/appealsSlice";
 import authReducer from "./slices/authSlice";
 // import objectReducer from "./slices/objectSlice";
-// import objectsReducer from "./slices/objectsSlice";
+import objectsReducer from "./slices/objectsSlice";
 // import plannerReducer from "./slices/plannerSlice";
 // import teamsReducer from "./slices/teamsSlice";
 // import usersReducer from "./slices/usersSlice";
@@ -14,7 +14,7 @@ import authReducer from "./slices/authSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    // objects: objectsReducer,
+    objects: objectsReducer,
     // object: objectReducer,
     // zones: zonesReducer,
     // users: usersReducer,

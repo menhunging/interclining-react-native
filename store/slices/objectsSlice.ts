@@ -1,12 +1,12 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "../../api/api";
 
 import type {
+  ObjectForm,
+  ObjectFormResponse,
   ObjectItem,
   ObjectsResponse,
   ObjectsState,
-  ObjectForm,
-  ObjectFormResponse,
 } from "@/types/objects/objects";
 
 export const initialState: ObjectsState = {

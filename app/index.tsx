@@ -1,36 +1,17 @@
 import Preloader from "@/components/ui/Preloader/Preloader";
 import { COLORS } from "@/constants/colors";
-import { STORAGE_KEYS } from "@/constants/constants";
-import { authUser, logout } from "@/store/slices/authSlice";
-import { useAppDispatch, useAppSelector } from "@/store/store";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import useCheckAuth from "@/hook/useCheckAuth";
+import { useAppSelector } from "@/store/store";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import Auth from "./auth";
 
 const Index: React.FC = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
-  const dispatch = useAppDispatch();
-
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const isCheckingAuth = useCheckAuth();
 
   const router = useRouter();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-      if (token) {
-        const result = await dispatch(authUser());
-        if (authUser.rejected.match(result)) {
-          dispatch(logout());
-        }
-      }
-      setIsCheckingAuth(false);
-    };
-
-    checkAuth();
-  }, [dispatch]);
 
   useEffect(() => {
     if (isAuthenticated) {
