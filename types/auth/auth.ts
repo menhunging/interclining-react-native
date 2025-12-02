@@ -5,6 +5,7 @@ export interface AuthMessage {
   role: string;
   email: string;
   token?: string;
+  id: string;
 }
 
 export interface AuthResponse {

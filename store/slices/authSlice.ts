@@ -10,6 +10,7 @@ const initialState: AuthState = {
   error: null,
   isAuthenticated: false,
   userInfo: {
+    id: "",
     login: "",
     role: "",
     email: "",
@@ -78,6 +79,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       state.userInfo = {
+        id: "",
         login: "",
         role: "",
         email: "",
@@ -110,6 +112,7 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(authUser.fulfilled, (state, action) => {
+        state.userInfo.id = action.payload.id;
         state.userInfo.login = action.payload.login;
         state.userInfo.email = action.payload.email;
         state.userInfo.role = action.payload.role;

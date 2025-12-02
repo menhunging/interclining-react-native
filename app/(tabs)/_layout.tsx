@@ -1,8 +1,14 @@
 import { COLORS } from "@/constants/colors";
+import { useAppSelector } from "@/store/store";
+import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
-export default function TabsLayout() {
+const TabsLayout = () => {
+  const { userInfo } = useAppSelector((state) => state.auth);
+
+  const isAdmin = checkRoleAdmin(Number(userInfo.role));
+
   return (
     <Tabs
       screenOptions={{
@@ -15,11 +21,13 @@ export default function TabsLayout() {
         name="objects"
         options={{
           title: "Сводка",
+          href: isAdmin ? undefined : null,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bar-chart-outline" size={size} color={color} />
           ),
         }}
       />
+
       <Tabs.Screen
         name="tasks"
         options={{
@@ -33,6 +41,7 @@ export default function TabsLayout() {
         name="appeals"
         options={{
           title: "Обращения",
+          href: isAdmin ? undefined : null,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble-outline" size={size} color={color} />
           ),
@@ -58,4 +67,6 @@ export default function TabsLayout() {
       />
     </Tabs>
   );
-}
+};
+
+export default TabsLayout;

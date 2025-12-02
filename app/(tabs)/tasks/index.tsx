@@ -1,51 +1,52 @@
-import HeaderItem from "@/components/Header/HeaderItem";
-import ObjectAppeals from "@/components/Object/ObjectAppeals";
-import ObjectTeams from "@/components/Object/ObjectTeams";
-import ObjectUsers from "@/components/Object/ObjectUsers";
+import Header from "@/components/Header/Header";
+import TasksList from "@/components/Tasks/TasksList";
 import Preloader from "@/components/ui/Preloader/Preloader";
 import { COLORS } from "@/constants/colors";
-import { getObjectById } from "@/store/slices/objectSlice";
+import { authUser } from "@/store/slices/authSlice";
+import { getTasksAll, getTasksUser } from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
-import { useLocalSearchParams } from "expo-router";
+import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
 import { useEffect } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-const ObjectScreen = () => {
+const Tasks = () => {
   const dispatch = useAppDispatch();
-  const { loading, data: obj, error } = useAppSelector((state) => state.object);
 
-  const { id } = useLocalSearchParams(); // получаем id из URL
+  const { loading: loadingAuth } = useAppSelector((state) => state.auth);
+  const { DATA: tasks, loading: loadingTask } = useAppSelector(
+    (state) => state.tasks
+  );
 
   useEffect(() => {
-    if (id) {
-      dispatch(getObjectById(id));
-      // dispatch(fetchUsers());
-    }
-  }, [id, dispatch]);
+    const check = async () => {
+      const result = await dispatch(authUser());
 
-  if (!obj) {
-    return <Preloader />;
-  } else {
-    return (
-      <View style={styles.container}>
-        <View style={styles.headerWrapper}>
-          <HeaderItem
-            name={obj.name}
-            desc={String(obj.zones_count)}
-            loading={loading}
-          />
-        </View>
-        <ScrollView
-          style={styles.main}
-          contentContainerStyle={styles.scrollContent}
-        >
-          <ObjectTeams teams={obj.teams} loading={loading} />
-          <ObjectUsers users={obj.users} loading={loading} />
-          <ObjectAppeals appeals={obj.appeal} loading={loading} />
-        </ScrollView>
+      if (authUser.fulfilled.match(result)) {
+        const fetchUser = result.payload;
+
+        checkRoleAdmin(Number(fetchUser.role))
+          ? dispatch(getTasksAll())
+          : dispatch(getTasksUser(fetchUser.id));
+      }
+    };
+
+    check();
+  }, [dispatch]);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerWrapper}>
+        <Header />
       </View>
-    );
-  }
+      <View style={styles.main}>
+        {loadingAuth || loadingTask ? (
+          <Preloader />
+        ) : (
+          <TasksList tasks={tasks} />
+        )}
+      </View>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -101,11 +102,9 @@ const styles = StyleSheet.create({
   },
   main: {
     flex: 1,
+    paddingHorizontal: 20,
     zIndex: 0,
-  },
-  scrollContent: {
-    paddingBottom: 40,
   },
 });
 
-export default ObjectScreen;
+export default Tasks;

@@ -1,23 +1,28 @@
 import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
-import { ObjectItem } from "@/types/objects/objects";
 import { useNavigation } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import IconBack from "../ui/Icons/IconBack";
+import TextUI from "../ui/Text/Text";
 
-interface HeaderObjectItemProps {
-  loading: boolean;
-  obj: ObjectItem | null;
+interface HeaderItem {
+  mode?: "fullScreenModal" | "default";
+  loading?: boolean;
+  name: string | null;
+  desc: string | null;
 }
 
-const HeaderObjectItem: React.FC<HeaderObjectItemProps> = ({
-  obj,
-  loading,
-}) => {
+const HeaderItem: React.FC<HeaderItem> = ({ name, desc, loading, mode }) => {
   const navigation = useNavigation();
 
   return (
-    <View style={styles.header}>
+    <View
+      style={
+        mode === "fullScreenModal"
+          ? [styles.header, styles.headerFull]
+          : styles.header
+      }
+    >
       <View style={styles.headerControls}>
         <View style={styles.objectHead}>
           <Pressable
@@ -35,10 +40,18 @@ const HeaderObjectItem: React.FC<HeaderObjectItemProps> = ({
             </>
           ) : (
             <>
-              <Text style={styles.objectHeadName}>{obj?.name}</Text>
+              <TextUI fontWeight="medium" style={styles.objectHeadName}>
+                {name}
+              </TextUI>
               <View style={styles.objectHeadZone}>
-                <Text style={styles.objectHeadZoneTitle}>Зоны:</Text>
-                <Text style={styles.countZone}>{obj?.zones_count}</Text>
+                {mode === "fullScreenModal" ? (
+                  <TextUI style={styles.objectHeadZoneTitle}>{desc}</TextUI>
+                ) : (
+                  <>
+                    <TextUI style={styles.objectHeadZoneTitle}>Зоны:</TextUI>
+                    <TextUI style={styles.countZone}>{desc}</TextUI>
+                  </>
+                )}
               </View>
             </>
           )}
@@ -66,6 +79,15 @@ const styles = StyleSheet.create({
     // Android
     elevation: 4, // подбирается экспериментально (≈ shadowRadius)
   },
+  headerFull: {
+    // iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 7 }, // соответствует 0px 2px
+    shadowOpacity: 0.08, // прозрачность (#0000001A ≈ 10%)
+    shadowRadius: 5, // радиус размытия
+    // Android
+    elevation: 4, // подбирается экспериментально (≈ shadowRadius)
+  },
   headerControls: {
     gap: 7,
     flexDirection: "row",
@@ -77,12 +99,16 @@ const styles = StyleSheet.create({
   },
   objectHeadIcon: {
     position: "absolute",
-    left: 0,
+    left: -20,
     top: 0,
-    width: 35,
-    height: 35,
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  objectHeadName: {},
+  objectHeadName: {
+    fontSize: 18,
+  },
 
   objectHeadZone: {
     flexDirection: "row",
@@ -96,4 +122,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HeaderObjectItem;
+export default HeaderItem;

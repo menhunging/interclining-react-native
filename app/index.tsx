@@ -2,20 +2,23 @@ import Preloader from "@/components/ui/Preloader/Preloader";
 import { COLORS } from "@/constants/colors";
 import useCheckAuth from "@/hook/useCheckAuth";
 import { useAppSelector } from "@/store/store";
+import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import Auth from "./auth";
 
 const Index: React.FC = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, userInfo } = useAppSelector((state) => state.auth);
   const isCheckingAuth = useCheckAuth();
 
   const router = useRouter();
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace("/(tabs)/objects");
+      checkRoleAdmin(Number(userInfo.role))
+        ? router.replace("/(tabs)/objects")
+        : router.replace("/(tabs)/tasks");
     }
   }, [isAuthenticated, router]);
 
