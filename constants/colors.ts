@@ -6,4 +6,5 @@ export const COLORS = {
   green: "#019875",
   red: "#eb2678ff",
   tabNotActiveColor: "#6F7583",
+  gray: "#90939C",
 };

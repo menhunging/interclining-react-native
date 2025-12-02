@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "@/api/api";
 import type { ObjectForm, ObjectItem } from "@/types/objects/objects";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 interface ObjectState {
   loading: boolean;
@@ -16,7 +16,7 @@ const initialState: ObjectState = {
 
 export const getObjectById = createAsyncThunk<
   ObjectItem,
-  string,
+  string | string[],
   { rejectValue: string }
 >("object/getById", async (id, thunkAPI) => {
   try {

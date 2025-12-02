@@ -1,3 +1,4 @@
+import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
 import type { ObjectItem } from "@/types/objects/objects";
 import { getFullPhotoUrl } from "@/utils/getFullPhotoUrl";
@@ -6,10 +7,10 @@ import {
   FlatList,
   Image,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import TextUI from "../ui/Text/Text";
 
 interface ObjectsListProps {
   objects: ObjectItem[];
@@ -25,7 +26,7 @@ const ObjectsList: React.FC<ObjectsListProps> = ({ objects }) => {
     return (
       <TouchableOpacity
         style={styles.objectItem}
-        onPress={() => router.push(`/objects/${id}`)} // ✅ переход
+        onPress={() => router.push(`/objects/${id}`)}
       >
         {photo ? (
           <View style={styles.pictureBlock}>
@@ -37,24 +38,32 @@ const ObjectsList: React.FC<ObjectsListProps> = ({ objects }) => {
           </View>
         ) : (
           <View style={styles.noPhoto}>
-            <Text>🖼️ Фото не загружено</Text>
+            <TextUI>🖼️ Фото не загружено</TextUI>
           </View>
         )}
 
         <View style={styles.content}>
-          <Text style={styles.name}>{name}</Text>
+          <TextUI fontWeight="semibold" style={styles.name}>
+            {name}
+          </TextUI>
           <View style={styles.infoRow}>
             <View style={styles.infoBlock}>
-              <Text>зоны:</Text>
-              <Text style={styles.bold}>{zones_count}</Text>
+              <TextUI fontWeight="medium" style={styles.infoBlockTitle}>
+                зоны:
+              </TextUI>
+              <TextUI fontWeight="medium">{zones_count}</TextUI>
             </View>
             <View style={styles.infoBlock}>
-              <Text>задания:</Text>
-              <Text style={styles.bold}>{tasks_count}</Text>
+              <TextUI fontWeight="medium" style={styles.infoBlockTitle}>
+                задания:
+              </TextUI>
+              <TextUI fontWeight="medium">{tasks_count}</TextUI>
             </View>
             <View style={[styles.infoBlock, styles.infoBlockLast]}>
-              <Text>сотрудники:</Text>
-              <Text style={styles.bold}>{users_count}</Text>
+              <TextUI fontWeight="medium" style={styles.infoBlockTitle}>
+                сотрудники:
+              </TextUI>
+              <TextUI fontWeight="medium">{users_count}</TextUI>
             </View>
           </View>
         </View>
@@ -70,6 +79,11 @@ const ObjectsList: React.FC<ObjectsListProps> = ({ objects }) => {
       keyExtractor={(item) => item.id}
       style={styles.list}
       contentContainerStyle={styles.listContent}
+      ListHeaderComponent={
+        <TextUI fontWeight="semibold" style={baseStyle.caption}>
+          Объекты
+        </TextUI>
+      } // заголовок для скролла вместе с обьектами
       columnWrapperStyle={styles.listRow}
       showsVerticalScrollIndicator={false}
     />
@@ -84,7 +98,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     gap: 8,
-    padding: 20,
+    paddingHorizontal: 20,
   },
   listRow: {
     columnGap: 8,
@@ -134,8 +148,8 @@ const styles = StyleSheet.create({
     gap: 8,
     width: "100%",
   },
-  bold: {
-    fontWeight: "500",
+  infoBlockTitle: {
+    opacity: 0.5,
   },
   infoBlockLast: {
     borderBottomWidth: 0,

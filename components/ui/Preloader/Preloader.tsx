@@ -1,7 +1,15 @@
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
 
 const Preloader = () => {
-  return <ActivityIndicator size={"large"} color="#000" />;
+  return (
+    <ActivityIndicator style={styles.prealoder} size={"small"} color="#000" />
+  );
 };
+
+const styles = StyleSheet.create({
+  prealoder: {
+    flex: 1,
+  },
+});
 
 export default Preloader;
