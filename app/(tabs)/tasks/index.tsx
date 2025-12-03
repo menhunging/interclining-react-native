@@ -22,30 +22,21 @@ const Tasks = () => {
   const fetchTasks = async () => {
     let user = userInfo;
 
-    console.log("user", user);
-
-    // Проверяем что пользователь авторизован И есть все необходимые данные
     if (!isAuthenticated || !userInfo.id || !userInfo.role) {
-      console.log("not user");
-
-      const result = await dispatch(authUser());
-      if (authUser.fulfilled.match(result)) {
-        user = result.payload;
-      } else {
-        return;
-      }
+      await dispatch(authUser());
     }
 
-    if (checkRoleAdmin(Number(user.role))) {
-      await dispatch(getTasksAll());
-    } else {
-      await dispatch(getTasksUser(user.id));
+    if (userInfo.id || userInfo.role) {
+      if (checkRoleAdmin(Number(user.role))) {
+        await dispatch(getTasksAll());
+      } else {
+        await dispatch(getTasksUser(user.id));
+      }
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      console.log("fetchTasks");
       fetchTasks();
     }, [fetchTasks])
   );
@@ -67,8 +58,6 @@ const Tasks = () => {
             </TextUI>
             <ButtonUI
               onPress={() => {
-                console.log("click", userInfo, isAuthenticated);
-
                 fetchTasks();
               }}
               style={styles.btnReset}

@@ -3,6 +3,7 @@ import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 
 // import appealsReducer from "./slices/appealsSlice";
+import activeTaskReducer from "./slices/activeTaskSlice";
 import authReducer, { logout } from "./slices/authSlice";
 import objectReducer from "./slices/objectSlice";
 import objectsReducer from "./slices/objectsSlice";
@@ -13,6 +14,7 @@ import tasksReducer from "./slices/tasksSlice";
 // import zonesReducer from "./slices/zonesSlice";
 
 const reducers = combineReducers({
+  activeTask: activeTaskReducer,
   auth: authReducer,
   objects: objectsReducer,
   object: objectReducer,

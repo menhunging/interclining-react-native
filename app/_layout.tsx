@@ -1,3 +1,4 @@
+import AppInitializer from "@/components/AppInitializer";
 import { COLORS } from "@/constants/colors";
 import { store } from "@/store/store";
 import { useFonts } from "expo-font";
@@ -20,24 +21,26 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.wrapper} edges={["top", "right", "left"]}>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: "slide_from_right",
-            }}
-          >
-            <Stack.Screen
-              name="index"
-              options={{
-                gestureEnabled: false,
+      <AppInitializer>
+        <SafeAreaProvider>
+          <SafeAreaView style={styles.wrapper} edges={["top", "right", "left"]}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                animation: "slide_from_right",
               }}
-            />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-        </SafeAreaView>
-      </SafeAreaProvider>
+            >
+              <Stack.Screen
+                name="index"
+                options={{
+                  gestureEnabled: false,
+                }}
+              />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </AppInitializer>
     </Provider>
   );
 }

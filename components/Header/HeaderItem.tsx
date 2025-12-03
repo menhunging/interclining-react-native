@@ -10,9 +10,16 @@ interface HeaderItem {
   loading?: boolean;
   name: string | null;
   desc: string | null;
+  hideArrow?: boolean;
 }
 
-const HeaderItem: React.FC<HeaderItem> = ({ name, desc, loading, mode }) => {
+const HeaderItem: React.FC<HeaderItem> = ({
+  name,
+  desc,
+  loading,
+  mode,
+  hideArrow,
+}) => {
   const navigation = useNavigation();
 
   return (
@@ -24,13 +31,16 @@ const HeaderItem: React.FC<HeaderItem> = ({ name, desc, loading, mode }) => {
       }
     >
       <View style={styles.headerControls}>
-        <View style={styles.objectHead}>
-          <Pressable
-            style={styles.objectHeadIcon}
-            onPress={() => navigation.goBack()}
-          >
-            <IconBack />
-          </Pressable>
+        <View style={[styles.objectHead, hideArrow && styles.notpadding]}>
+          {!hideArrow && (
+            <Pressable
+              style={styles.objectHeadIcon}
+              onPress={() => navigation.goBack()}
+            >
+              <IconBack />
+            </Pressable>
+          )}
+
           {loading ? (
             <>
               <View
@@ -119,6 +129,9 @@ const styles = StyleSheet.create({
   },
   countZone: {
     fontWeight: 500,
+  },
+  notpadding: {
+    paddingLeft: 0,
   },
 });
 

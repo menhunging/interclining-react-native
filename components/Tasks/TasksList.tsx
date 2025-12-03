@@ -1,8 +1,9 @@
 import { COLORS } from "@/constants/colors";
 import { ITask } from "@/types/typesMobile/tasks";
+import { useAppSelector } from "@/store/store";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import IconArrowRight from "../ui/Icons/IconArrowRight";
 import IconFinish from "../ui/Icons/iconFinish";
 import TextUI from "../ui/Text/Text";
@@ -15,6 +16,7 @@ interface TasksListProps {
 
 const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   const router = useRouter();
+  const { taskId, isRunning } = useAppSelector((state) => state.activeTask);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -26,13 +28,34 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
     setRefreshing(false);
   };
 
+  const handleTaskPress = (taskIdParam: string) => {
+    // Если есть активная задача и она не совпадает с выбранной
+    if (taskId && isRunning && taskId !== taskIdParam) {
+      Alert.alert(
+        "Невозможно перейти",
+        "Завершите текущую задачу перед началом новой",
+        [
+          { text: "ОК" },
+          {
+            text: "Перейти к активной",
+            onPress: () => router.push(`/tasks/${taskId}`)
+          }
+        ]
+      );
+      return;
+    }
+
+    router.push(`/tasks/${taskIdParam}`);
+  };
+
   const renderItem = ({ item }: { item: ITask }) => {
     const { id, name, description, time_start, time_end } = item;
+    const isActiveTask = taskId === id && isRunning;
 
     return (
       <TouchableOpacity
-        style={styles.task}
-        onPress={() => router.push(`/tasks/${id}`)}
+        style={[styles.task, isActiveTask && styles.activeTask]}
+        onPress={() => handleTaskPress(id)}
       >
         <View style={styles.tasksDates}>
           <TextUI fontWeight="medium" style={styles.tasksDatesStart}>
@@ -44,6 +67,11 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
               {time_end.slice(0, -3)}
             </TextUI>
           </View>
+          {isActiveTask && (
+            <View style={styles.activeIndicator}>
+              <TextUI style={styles.activeText}>АКТИВНА</TextUI>
+            </View>
+          )}
           <View style={styles.tasksIconArrowRight}>
             <IconArrowRight />
           </View>
@@ -91,6 +119,22 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bgGray,
     borderRadius: 14,
     gap: 8,
+  },
+  activeTask: {
+    backgroundColor: COLORS.green + '20', // полупрозрачный зеленый
+    borderWidth: 2,
+    borderColor: COLORS.green,
+  },
+  activeIndicator: {
+    backgroundColor: COLORS.green,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  activeText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   tasksDates: {
     flexDirection: "row",
