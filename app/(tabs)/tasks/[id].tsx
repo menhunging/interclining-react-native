@@ -14,7 +14,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const TaskScreen: React.FC<ITask> = () => {
   const dispatch = useAppDispatch();
-  const { loading, task } = useAppSelector((state) => state.tasks);
+  const { task } = useAppSelector((state) => state.tasks);
 
   const { id } = useLocalSearchParams(); // получаем id из URL
 

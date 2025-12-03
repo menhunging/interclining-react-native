@@ -10,8 +10,12 @@ const Objects = () => {
   const { DATA: objects } = useAppSelector((state) => state.objects);
   const dispatch = useAppDispatch();
 
+  const fetchObjects = async () => {
+    await dispatch(getObjects());
+  };
+
   useEffect(() => {
-    dispatch(getObjects());
+    fetchObjects();
   }, [dispatch]);
 
   return (
@@ -20,7 +24,7 @@ const Objects = () => {
         <Header />
       </View>
       <View style={styles.main}>
-        <ObjectsList objects={objects} />
+        <ObjectsList objects={objects} onRefresh={fetchObjects} />
       </View>
     </View>
   );

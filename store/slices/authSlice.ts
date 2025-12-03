@@ -55,6 +55,8 @@ export const authUser = createAsyncThunk<
     const response = await api.post<AuthResponse>("me/");
     const { success, message } = response.data;
 
+    console.log("me/", response.data);
+
     if (!success || typeof message === "string") {
       return thunkAPI.rejectWithValue(
         typeof message === "string" ? message : "Ошибка авторизации"
@@ -94,6 +96,7 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
+        state.userInfo.id = action.payload.id;
         state.userInfo.login = action.payload.login;
         state.userInfo.email = action.payload.email;
         state.userInfo.role = action.payload.role;

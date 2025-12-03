@@ -3,6 +3,7 @@ import { COLORS } from "@/constants/colors";
 import type { ObjectItem } from "@/types/objects/objects";
 import { getFullPhotoUrl } from "@/utils/getFullPhotoUrl";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   FlatList,
   Image,
@@ -15,10 +16,21 @@ import TextUI from "../ui/Text/Text";
 interface ObjectsListProps {
   objects: ObjectItem[];
   loading?: boolean;
+  onRefresh?: () => Promise<void> | void;
 }
 
-const ObjectsList: React.FC<ObjectsListProps> = ({ objects }) => {
+const ObjectsList: React.FC<ObjectsListProps> = ({ objects, onRefresh }) => {
   const router = useRouter();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    if (onRefresh) {
+      await onRefresh();
+    }
+    setRefreshing(false);
+  };
 
   const renderItem = ({ item }: { item: ObjectItem }) => {
     const { id, name, photo, zones_count, tasks_count, users_count } = item;
@@ -86,6 +98,8 @@ const ObjectsList: React.FC<ObjectsListProps> = ({ objects }) => {
       } // заголовок для скролла вместе с обьектами
       columnWrapperStyle={styles.listRow}
       showsVerticalScrollIndicator={false}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     />
   );
 };

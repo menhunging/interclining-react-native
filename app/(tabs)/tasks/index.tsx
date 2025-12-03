@@ -1,37 +1,54 @@
 import Header from "@/components/Header/Header";
 import TasksList from "@/components/Tasks/TasksList";
+import ButtonUI from "@/components/ui/Button/ButtonUI";
 import Preloader from "@/components/ui/Preloader/Preloader";
+import TextUI from "@/components/ui/Text/Text";
+import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
 import { authUser } from "@/store/slices/authSlice";
 import { getTasksAll, getTasksUser } from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
-import { useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { StyleSheet, View } from "react-native";
 
 const Tasks = () => {
   const dispatch = useAppDispatch();
 
-  const { loading: loadingAuth } = useAppSelector((state) => state.auth);
-  const { DATA: tasks, loading: loadingTask } = useAppSelector(
-    (state) => state.tasks
-  );
+  const { DATA: tasks, loading } = useAppSelector((state) => state.tasks);
+  const { userInfo, isAuthenticated } = useAppSelector((state) => state.auth);
 
-  useEffect(() => {
-    const check = async () => {
+  const fetchTasks = async () => {
+    let user = userInfo;
+
+    console.log("user", user);
+
+    // Проверяем что пользователь авторизован И есть все необходимые данные
+    if (!isAuthenticated || !userInfo.id || !userInfo.role) {
+      console.log("not user");
+
       const result = await dispatch(authUser());
-
       if (authUser.fulfilled.match(result)) {
-        const fetchUser = result.payload;
-
-        checkRoleAdmin(Number(fetchUser.role))
-          ? dispatch(getTasksAll())
-          : dispatch(getTasksUser(fetchUser.id));
+        user = result.payload;
+      } else {
+        return;
       }
-    };
+    }
 
-    check();
-  }, [dispatch]);
+    if (checkRoleAdmin(Number(user.role))) {
+      await dispatch(getTasksAll());
+    } else {
+      await dispatch(getTasksUser(user.id));
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log("fetchTasks");
+      fetchTasks();
+    }, [fetchTasks])
+  );
 
   return (
     <View style={styles.container}>
@@ -39,10 +56,26 @@ const Tasks = () => {
         <Header />
       </View>
       <View style={styles.main}>
-        {loadingAuth || loadingTask ? (
+        {loading && !tasks?.length ? (
           <Preloader />
+        ) : tasks && tasks.length > 0 ? (
+          <TasksList tasks={tasks} onRefresh={fetchTasks} />
         ) : (
-          <TasksList tasks={tasks} />
+          <View style={styles.emptyBlock}>
+            <TextUI style={[baseStyle.emptyText, styles.empty]}>
+              Здесь ничего нет
+            </TextUI>
+            <ButtonUI
+              onPress={() => {
+                console.log("click", userInfo, isAuthenticated);
+
+                fetchTasks();
+              }}
+              style={styles.btnReset}
+            >
+              Обновить
+            </ButtonUI>
+          </View>
         )}
       </View>
     </View>
@@ -104,6 +137,19 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     zIndex: 0,
+  },
+  emptyBlock: {
+    justifyContent: "center",
+    flex: 1,
+  },
+  empty: {
+    padding: 20,
+    fontSize: 18,
+    textAlign: "center",
+  },
+  btnReset: {
+    width: "50%",
+    marginHorizontal: "auto",
   },
 });
 

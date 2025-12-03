@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { ITask } from "@/types/typesMobile/tasks";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import IconArrowRight from "../ui/Icons/IconArrowRight";
 import IconFinish from "../ui/Icons/iconFinish";
@@ -9,10 +10,21 @@ import TextUI from "../ui/Text/Text";
 interface TasksListProps {
   tasks: ITask[];
   loading?: boolean;
+  onRefresh?: () => Promise<void> | void;
 }
 
-const TasksList: React.FC<TasksListProps> = ({ tasks }) => {
+const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   const router = useRouter();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    if (onRefresh) {
+      await onRefresh();
+    }
+    setRefreshing(false);
+  };
 
   const renderItem = ({ item }: { item: ITask }) => {
     const { id, name, description, time_start, time_end } = item;
@@ -58,6 +70,8 @@ const TasksList: React.FC<TasksListProps> = ({ tasks }) => {
       style={styles.list}
       contentContainerStyle={styles.listContent}
       showsVerticalScrollIndicator={false}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
     />
   );
 };
