@@ -11,6 +11,11 @@
     "ios": {
       "supportsTablet": true
     },
+    "permissions": {
+      "CAMERA": {
+        "description": "Allow app to access camera for QR code scanning"
+      }
+    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

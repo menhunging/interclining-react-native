@@ -2,12 +2,21 @@ import ButtonUI from "@/components/ui/Button/ButtonUI";
 import FilterIcon from "@/components/ui/Icons/FilterIcon";
 import { COLORS } from "@/constants/colors";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import IconSearch from "../ui/Icons/IocnSearch";
 
 const Header = () => {
   return (
     <View style={styles.header}>
       <View style={styles.headerControls}>
-        <TextInput style={styles.headerControlsInput} placeholder="Search..." />
+        <View style={styles.headerInputItem}>
+          <View style={styles.headerInputItemIcon}>
+            <IconSearch />
+          </View>
+          <TextInput
+            style={styles.headerControlsInput}
+            placeholder="Поиск..."
+          />
+        </View>
         <ButtonUI mode="btnIcon">
           <FilterIcon />
         </ButtonUI>
@@ -67,7 +76,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderRadius: 20,
-    paddingHorizontal: 20,
+    paddingLeft: 40,
+    paddingRight: 20,
   },
   btn: {
     marginTop: 50,
@@ -109,6 +119,17 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: "50%",
+  },
+
+  headerInputItem: {
+    flex: 1,
+  },
+
+  headerInputItemIcon: {
+    position: "absolute",
+    zIndex: 1,
+    top: 12,
+    left: 13,
   },
 });
 

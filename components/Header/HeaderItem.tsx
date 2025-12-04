@@ -70,6 +70,7 @@ const HeaderItem: React.FC<HeaderItem> = ({
           <FilterIcon />
         </ButtonUI> */}
       </View>
+      {/* <PeriodTabs active="Сегодня" onChange={() => {}} /> */}
     </View>
   );
 };
@@ -101,6 +102,7 @@ const styles = StyleSheet.create({
   headerControls: {
     gap: 7,
     flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 20,
   },
   objectHead: {

@@ -7,28 +7,34 @@ import TextUI from "@/components/ui/Text/Text";
 import { COLORS } from "@/constants/colors";
 import {
   startTaskTimer,
-  updateTimer,
   updateTimerSync,
 } from "@/store/slices/activeTaskSlice";
 import { getTaskById } from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { ITask } from "@/types/typesMobile/tasks";
+import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const TaskScreen: React.FC<ITask> = () => {
+  const { id } = useLocalSearchParams();
+
+  const router = useRouter();
+
   const dispatch = useAppDispatch();
+
+  const { userInfo } = useAppSelector((state) => state.auth);
   const { task } = useAppSelector((state) => state.tasks);
   const { taskId, currentTime, isRunning } = useAppSelector(
     (state) => state.activeTask
   );
-  const router = useRouter();
 
-  const { id } = useLocalSearchParams();
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [localTimer, setLocalTimer] = useState<number>(currentTime);
+
+  const isAdmin = checkRoleAdmin(Number(userInfo.role));
 
   // Проверяем, является ли эта задача активной
   const isCurrentActiveTask = taskId === id;
@@ -36,7 +42,6 @@ const TaskScreen: React.FC<ITask> = () => {
   const handleStart = async () => {
     if (id) {
       await dispatch(startTaskTimer(id as string));
-      setLocalTimer(0); // сбрасываем локальный таймер при старте
     }
   };
 
@@ -60,47 +65,28 @@ const TaskScreen: React.FC<ITask> = () => {
     return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
   };
 
-  // синхронизируем локальный таймер с Redux при первой загрузке
-  useEffect(() => {
-    if (isCurrentActiveTask && currentTime > 0) {
-      setLocalTimer(currentTime);
-    }
-  }, [currentTime, isCurrentActiveTask]);
-
-  // эффект для обновления таймера в UI
-  useEffect(() => {
-    if (isRunning && isCurrentActiveTask) {
-      timerIntervalRef.current = setInterval(() => {
-        setLocalTimer((prev) => prev + 1);
-      }, 1000);
-    } else {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
-      }
-    }
-
-    return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
-    };
-  }, [isRunning, isCurrentActiveTask]);
-
-  // грузим задачу только при изменении id
   useEffect(() => {
     if (id) {
-      // TODO надо будет решить проблему повторного рендера, может и вправду в продакшене этого не будет. Попробовать
       dispatch(getTaskById(id));
     }
   }, [id, dispatch]);
 
-  // если задача активная — обновляем таймер
+  // синхронизируем локальный таймер с Redux только при изменении currentTime
   useEffect(() => {
-    if (isCurrentActiveTask) {
-      dispatch(updateTimer());
+    setLocalTimer(currentTime);
+  }, [currentTime]);
+
+  // эффект для локального таймера в UI - только инкремент каждую секунду
+  useEffect(() => {
+    if (isRunning && !timerIntervalRef.current) {
+      timerIntervalRef.current = setInterval(() => {
+        setLocalTimer((prev) => prev + 1);
+      }, 1000);
+    } else if (!isRunning && timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
-  }, [isCurrentActiveTask, dispatch]);
+  }, [isRunning]);
 
   if (task) {
     return (
@@ -149,13 +135,9 @@ const TaskScreen: React.FC<ITask> = () => {
 
                   <ButtonUI
                     style={styles.btn}
-                    onPress={
-                      !isRunning || !isCurrentActiveTask
-                        ? handleStart
-                        : handleStop
-                    }
+                    onPress={!isRunning ? handleStart : handleStop}
                   >
-                    {isRunning && isCurrentActiveTask ? (
+                    {isRunning ? (
                       <View style={styles.btnContent}>
                         <IconCheckCircle />
                         <TextUI style={styles.btnContentText}>Завершить</TextUI>

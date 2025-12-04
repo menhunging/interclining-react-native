@@ -10,12 +10,19 @@ import Auth from "./auth";
 
 const Index: React.FC = () => {
   const { isAuthenticated, userInfo } = useAppSelector((state) => state.auth);
+  const { taskId, isRunning, loading } = useAppSelector(
+    (state) => state.activeTask
+  );
+
   const isCheckingAuth = useCheckAuth();
 
   const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    console.log("useEffect index start");
+
+    if (isAuthenticated && !taskId) {
+      console.log("useEffect index start isAuthenticated", isAuthenticated);
       checkRoleAdmin(Number(userInfo.role))
         ? router.replace("/(tabs)/objects")
         : router.replace("/(tabs)/tasks");

@@ -18,7 +18,7 @@ const initialState: ActiveTaskState = {
 };
 
 // Ключ для AsyncStorage
-const ACTIVE_TASK_KEY = "@active_task";
+const ACTIVE_TASK_KEY = "activeTask";
 
 // Сохранить состояние в AsyncStorage
 const saveToStorage = async (state: ActiveTaskState) => {
@@ -60,10 +60,9 @@ export const loadActiveTask = createAsyncThunk(
 export const startTaskTimer = createAsyncThunk(
   "activeTask/start",
   async (taskId: string, thunkAPI) => {
-    const now = Date.now();
     const state: ActiveTaskState = {
       taskId,
-      startTime: now,
+      startTime: Date.now(),
       currentTime: 0,
       isRunning: true,
       loading: false,
@@ -81,9 +80,8 @@ export const stopTaskTimer = createAsyncThunk(
     const state = thunkAPI.getState() as { activeTask: ActiveTaskState };
     const currentState = state.activeTask;
 
-    const now = Date.now();
     const elapsedSeconds = currentState.startTime
-      ? Math.floor((now - currentState.startTime) / 1000)
+      ? Math.floor((Date.now() - currentState.startTime) / 1000)
       : currentState.currentTime;
 
     const newState: ActiveTaskState = {

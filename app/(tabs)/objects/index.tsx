@@ -1,4 +1,3 @@
-import Header from "@/components/Header/Header";
 import ObjectsList from "@/components/Objects/ObjectsList";
 import { COLORS } from "@/constants/colors";
 import { getObjects } from "@/store/slices/objectsSlice";
@@ -20,9 +19,9 @@ const Objects = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerWrapper}>
+      {/* <View style={styles.headerWrapper}>
         <Header />
-      </View>
+      </View> */}
       <View style={styles.main}>
         <ObjectsList objects={objects} onRefresh={fetchObjects} />
       </View>

@@ -92,9 +92,11 @@ const ObjectsList: React.FC<ObjectsListProps> = ({ objects, onRefresh }) => {
       style={styles.list}
       contentContainerStyle={styles.listContent}
       ListHeaderComponent={
-        <TextUI fontWeight="semibold" style={baseStyle.caption}>
-          Объекты
-        </TextUI>
+        <>
+          <TextUI fontWeight="semibold" style={baseStyle.caption}>
+            Объекты
+          </TextUI>
+        </>
       } // заголовок для скролла вместе с обьектами
       columnWrapperStyle={styles.listRow}
       showsVerticalScrollIndicator={false}
@@ -127,6 +129,8 @@ const styles = StyleSheet.create({
   },
   pictureBlock: {
     height: 100,
+    borderRadius: 14,
+    overflow: "hidden",
     backgroundColor: "#f0f0f0",
   },
   image: {
@@ -141,6 +145,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 8,
+    flexDirection: "column",
+    flex: 1,
   },
   name: {
     fontSize: 14,
@@ -149,8 +155,8 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     alignItems: "flex-start",
-    flex: 1,
     fontSize: 14,
+    marginTop: "auto",
   },
   infoBlock: {
     flexDirection: "row",
