@@ -48,8 +48,7 @@ const TaskScreen: React.FC<ITask> = () => {
   const handleStop = async () => {
     // переходим на страницу завершения, таймер продолжает идти
     dispatch(updateTimerSync(localTimer));
-    const formattedTime = formatTime(localTimer);
-    router.push(`/tasks/finish?id=${id}&timer=${formattedTime}`);
+    router.push(`/tasks/finish?id=${id}&timer=${localTimer}`);
   };
 
   // для вывода времени в нашем формате
@@ -95,10 +94,11 @@ const TaskScreen: React.FC<ITask> = () => {
           <View style={styles.container}>
             <View style={styles.headerWrapper}>
               <HeaderItem
-                hideArrow={isRunning}
+                isRunningTimer={isRunning}
                 mode={"fullScreenModal"}
                 name={task.name_zone}
                 desc={task.name}
+                taskId={id as string}
               />
             </View>
             <ScrollView

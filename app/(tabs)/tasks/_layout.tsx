@@ -26,6 +26,18 @@ const TaskStackLayout = () => {
           presentation: "fullScreenModal",
         }}
       />
+      <Stack.Screen
+        name="pause"
+        options={{
+          presentation: "fullScreenModal",
+        }}
+      />
+      <Stack.Screen
+        name="pause-photo"
+        options={{
+          presentation: "fullScreenModal",
+        }}
+      />
     </Stack>
   );
 };

@@ -1,9 +1,15 @@
 import { COLORS } from "@/constants/colors";
-import { ITask } from "@/types/typesMobile/tasks";
 import { useAppSelector } from "@/store/store";
+import { ITask } from "@/types/typesMobile/tasks";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import IconArrowRight from "../ui/Icons/IconArrowRight";
 import IconFinish from "../ui/Icons/iconFinish";
 import TextUI from "../ui/Text/Text";
@@ -38,8 +44,8 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
           { text: "ОК" },
           {
             text: "Перейти к активной",
-            onPress: () => router.push(`/tasks/${taskId}`)
-          }
+            onPress: () => router.push(`/tasks/${taskId}`),
+          },
         ]
       );
       return;
@@ -49,7 +55,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   };
 
   const renderItem = ({ item }: { item: ITask }) => {
-    const { id, name, description, time_start, time_end } = item;
+    const { id, name, description, time_start, time_end, name_zone } = item;
     const isActiveTask = taskId === id && isRunning;
 
     return (
@@ -77,7 +83,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
           </View>
         </View>
         <TextUI fontWeight="medium" style={styles.title}>
-          Зона: {id}
+          Зона: {name_zone}
         </TextUI>
         <TextUI fontWeight="semibold" style={styles.name}>
           {name}
@@ -113,6 +119,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     gap: 8,
+    paddingBottom: 20,
   },
   task: {
     padding: 12,
@@ -121,7 +128,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   activeTask: {
-    backgroundColor: COLORS.green + '20', // полупрозрачный зеленый
+    backgroundColor: COLORS.green + "20", // полупрозрачный зеленый
     borderWidth: 2,
     borderColor: COLORS.green,
   },
@@ -134,7 +141,7 @@ const styles = StyleSheet.create({
   activeText: {
     color: COLORS.white,
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   tasksDates: {
     flexDirection: "row",

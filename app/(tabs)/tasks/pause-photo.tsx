@@ -4,9 +4,8 @@ import IconBack from "@/components/ui/Icons/IconBack";
 import TextUI from "@/components/ui/Text/Text";
 import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
-import { stopTaskTimer } from "@/store/slices/activeTaskSlice";
-import { finishTask, uploadTaskPhotos } from "@/store/slices/tasksSlice";
-import { useAppDispatch, useAppSelector } from "@/store/store";
+import { pauseTaskTimer } from "@/store/slices/activeTaskSlice";
+import { useAppDispatch } from "@/store/store";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -21,34 +20,12 @@ import {
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-const FinishScreen: React.FC = () => {
+const PausePhotoScreen: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { task } = useAppSelector((state) => state.tasks);
-
-  const { id, timer } = useLocalSearchParams();
-
-  const { taskId, currentTime, isRunning } = useAppSelector(
-    (state) => state.activeTask
-  );
 
   const router = useRouter();
 
-  // локальный таймер для продолжения отсчета
-  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [localTimer, setLocalTimer] = useState<number>(0);
-
-  // для вывода времени в нашем формате
-  const formatTime = (time: number) => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = time % 60;
-
-    const paddedHours = String(hours).padStart(2, "0");
-    const paddedMinutes = String(minutes).padStart(2, "0");
-    const paddedSeconds = String(seconds).padStart(2, "0");
-
-    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
-  };
+  const { id, reasons, customReason } = useLocalSearchParams();
 
   // состояние камеры
   const [facing, setFacing] = useState<CameraType>("back");
@@ -56,34 +33,6 @@ const FinishScreen: React.FC = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
   const cameraRef = useRef<CameraView>(null);
-
-  // Проверяем, является ли эта задача активной
-  const isCurrentActiveTask = taskId === id;
-
-  // инициализация локального таймера
-  useEffect(() => {
-    if (timer) {
-      setLocalTimer(Number(timer));
-    }
-  }, [timer]);
-
-  // эффект для локального таймера - только инкремент каждую секунду
-  useEffect(() => {
-    if (isRunning && isCurrentActiveTask && !timerIntervalRef.current) {
-      timerIntervalRef.current = setInterval(() => {
-        setLocalTimer((prev) => prev + 1);
-      }, 1000);
-    } else if (!isRunning && timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-
-    return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
-    };
-  }, [isRunning, isCurrentActiveTask]);
 
   // проверка разрешений камеры
   useEffect(() => {
@@ -121,29 +70,6 @@ const FinishScreen: React.FC = () => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSend = async () => {
-    try {
-      // console.log("Отправка фото:", photos);
-
-      // останавливаем таймер перед отправкой
-      await dispatch(stopTaskTimer());
-
-      // Сначала отправляем фото, если они есть
-      if (photos.length > 0) {
-        await dispatch(uploadTaskPhotos({ taskId: id, photos })).unwrap();
-      }
-
-      // Затем завершаем задачу с актуальным временем
-      const formattedTime = formatTime(localTimer);
-      await dispatch(finishTask({ id, time: formattedTime })).unwrap();
-
-      router.push(`/tasks/success?id=${id}&timer=${formattedTime}`);
-    } catch (error) {
-      console.error("Ошибка при отправке:", error);
-      Alert.alert("Ошибка", "Не удалось отправить данные. Попробуйте еще раз.");
-    }
-  };
-
   if (!permission) {
     return <View />;
   }
@@ -167,6 +93,37 @@ const FinishScreen: React.FC = () => {
     );
   }
 
+  const reasonOptions = {
+    extra_work: "Дополнительная работа",
+    late: "Не успеваю",
+    other: "Другое",
+  };
+
+  const reasonsKEY: keyof typeof reasonOptions =
+    reasons as keyof typeof reasonOptions;
+
+  const handleSend = async () => {
+    try {
+      // Здесь будет логика отправки на сервер
+      const payload = {
+        ...(id && { taskId: id }),
+        ...(reasons && { reasons: reasonOptions[reasonsKEY] }),
+        ...(customReason && { customReason }),
+        // ...(photos?.length && { photos }),
+      };
+      console.log("Отправка паузы:", payload);
+
+      // останавливаем таймер
+      await dispatch(pauseTaskTimer());
+
+      router.dismissAll();
+      router.replace(`/tasks/`);
+    } catch (error) {
+      console.error("Ошибка при отправке:", error);
+      Alert.alert("Ошибка", "Не удалось отправить данные. Попробуйте еще раз.");
+    }
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.wrapper} edges={["top", "right", "left"]}>
@@ -174,8 +131,8 @@ const FinishScreen: React.FC = () => {
           <View style={styles.headerWrapper}>
             <HeaderItem
               mode="fullScreenModal"
-              name={task?.name_zone || "Фотографирование"}
-              desc="Подтверждение выполнения"
+              name="Фотографирование"
+              desc="Подтверждение паузы"
             />
           </View>
 
@@ -188,59 +145,46 @@ const FinishScreen: React.FC = () => {
                 Сделать фото
               </TextUI>
 
-              <TextUI style={styles.subtitle}>
-                (обязательно для этой уборки)
-              </TextUI>
+              {photos.length > 0 && (
+                <TextUI style={styles.photosTitle}>
+                  Сделанные фото ({photos.length})
+                </TextUI>
+              )}
 
-              <View style={styles.photosSection}>
-                {photos.length > 0 && (
-                  <TextUI style={styles.photosTitle}>
-                    Сделанные фото ({photos.length})
-                  </TextUI>
-                )}
+              <View style={styles.photosGrid}>
+                {photos.map((photo, index) => (
+                  <View key={index} style={styles.photoContainer}>
+                    <Image source={{ uri: photo }} style={styles.photo} />
+                    <Pressable
+                      style={styles.removePhotoBtn}
+                      onPress={() => removePhoto(index)}
+                    >
+                      <TextUI style={styles.removePhotoText}>&times;</TextUI>
+                    </Pressable>
+                  </View>
+                ))}
 
-                <View style={styles.photosGrid}>
-                  {photos.map((photo, index) => (
-                    <View key={index} style={styles.photoContainer}>
-                      <Image source={{ uri: photo }} style={styles.photo} />
-                      <Pressable
-                        style={styles.removePhotoBtn}
-                        onPress={() => removePhoto(index)}
-                      >
-                        <TextUI style={styles.removePhotoText}>&times;</TextUI>
-                      </Pressable>
-                    </View>
-                  ))}
-
-                  <Pressable
-                    style={styles.addPhotoBtn}
-                    onPress={() => setShowCamera(true)}
-                  >
-                    <TextUI style={styles.addPhotoText}>+</TextUI>
-                  </Pressable>
-                </View>
+                <Pressable
+                  style={styles.addPhotoBtn}
+                  onPress={() => setShowCamera(true)}
+                >
+                  <TextUI style={styles.addPhotoText}>+</TextUI>
+                </Pressable>
               </View>
 
               <View style={styles.controls}>
-                {isRunning && isCurrentActiveTask && (
-                  <TextUI style={styles.timer}>
-                    Таймер: {formatTime(localTimer)}
-                  </TextUI>
-                )}
-
                 <ButtonUI
                   style={styles.btn}
                   onPress={() => setShowCamera(true)}
                 >
                   Сделать фото
                 </ButtonUI>
-
                 {photos.length > 0 && (
                   <ButtonUI
-                    style={[styles.btn, styles.sendBtn]}
+                    style={[styles.btn, styles.confirmBtn]}
                     onPress={handleSend}
                   >
-                    Отправить ({photos.length})
+                    Отправить
                   </ButtonUI>
                 )}
               </View>
@@ -248,7 +192,7 @@ const FinishScreen: React.FC = () => {
           </ScrollView>
         </View>
 
-        {/* Модальное окно камеры */}
+        {/* Полноэкранная камера */}
         <Modal
           visible={showCamera}
           animationType="slide"
@@ -325,22 +269,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    opacity: 0.7,
-    textAlign: "center",
     marginBottom: 30,
-  },
-  timer: {
-    marginTop: "auto",
     textAlign: "center",
-  },
-  photosSection: {
-    flex: 1,
-    marginBottom: 20,
   },
   photosTitle: {
     fontSize: 18,
@@ -351,6 +281,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    marginBottom: 20,
   },
   photoContainer: {
     position: "relative",
@@ -380,29 +311,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  addPhotoBtn: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: COLORS.green,
-    borderStyle: "dashed",
+  cameraBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.bgGray,
   },
-  addPhotoText: {
+  cameraBtnText: {
     fontSize: 32,
     color: COLORS.green,
     fontWeight: "bold",
   },
   controls: {
     gap: 12,
+    marginTop: "auto",
   },
   btn: {
     marginBottom: 0,
   },
-  sendBtn: {
+  confirmBtn: {
     backgroundColor: COLORS.black,
   },
   cameraContainer: {
@@ -420,14 +349,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     paddingHorizontal: 20,
     paddingBottom: 40,
-  },
-  cameraBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    justifyContent: "center",
-    alignItems: "center",
   },
   captureBtn: {
     width: 70,
@@ -448,6 +369,22 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: COLORS.white,
   },
+  addPhotoBtn: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: COLORS.green,
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.bgGray,
+  },
+  addPhotoText: {
+    fontSize: 32,
+    color: COLORS.green,
+    fontWeight: "bold",
+  },
 });
 
-export default FinishScreen;
+export default PausePhotoScreen;

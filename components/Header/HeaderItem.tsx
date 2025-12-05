@@ -1,8 +1,10 @@
 import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
+import ButtonUI from "../ui/Button/ButtonUI";
 import IconBack from "../ui/Icons/IconBack";
+import IconPaused from "../ui/Icons/IconPaused";
 import TextUI from "../ui/Text/Text";
 
 interface HeaderItem {
@@ -10,7 +12,8 @@ interface HeaderItem {
   loading?: boolean;
   name: string | null;
   desc: string | null;
-  hideArrow?: boolean;
+  isRunningTimer?: boolean;
+  taskId?: string;
 }
 
 const HeaderItem: React.FC<HeaderItem> = ({
@@ -18,9 +21,11 @@ const HeaderItem: React.FC<HeaderItem> = ({
   desc,
   loading,
   mode,
-  hideArrow,
+  isRunningTimer,
+  taskId,
 }) => {
   const navigation = useNavigation();
+  const router = useRouter();
 
   return (
     <View
@@ -31,8 +36,8 @@ const HeaderItem: React.FC<HeaderItem> = ({
       }
     >
       <View style={styles.headerControls}>
-        <View style={[styles.objectHead, hideArrow && styles.notpadding]}>
-          {!hideArrow && (
+        <View style={[styles.objectHead, isRunningTimer && styles.notpadding]}>
+          {!isRunningTimer && (
             <Pressable
               style={styles.objectHeadIcon}
               onPress={() => navigation.goBack()}
@@ -66,9 +71,15 @@ const HeaderItem: React.FC<HeaderItem> = ({
             </>
           )}
         </View>
-        {/* <ButtonUI mode="btnIcon">
-          <FilterIcon />
-        </ButtonUI> */}
+        {isRunningTimer && (
+          <ButtonUI
+            mode="btnIcon"
+            style={styles.btnPaused}
+            onPress={() => taskId && router.push(`/tasks/pause?id=${taskId}`)}
+          >
+            <IconPaused />
+          </ButtonUI>
+        )}
       </View>
       {/* <PeriodTabs active="Сегодня" onChange={() => {}} /> */}
     </View>
@@ -102,6 +113,8 @@ const styles = StyleSheet.create({
   headerControls: {
     gap: 7,
     flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     flexWrap: "wrap",
     paddingHorizontal: 20,
   },
@@ -134,6 +147,11 @@ const styles = StyleSheet.create({
   },
   notpadding: {
     paddingLeft: 0,
+  },
+
+  btnPaused: {
+    borderWidth: 1,
+    borderColor: COLORS.green,
   },
 });
 

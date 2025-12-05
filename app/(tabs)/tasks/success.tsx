@@ -29,7 +29,7 @@ const SuccessScreen: React.FC = () => {
         <View style={styles.container}>
           <View style={styles.headerWrapper}>
             <HeaderItem
-              hideArrow={true}
+              isRunningTimer={true}
               mode="fullScreenModal"
               name={task?.name_zone || "Успешно"}
               desc={task?.name || "Успешно"}

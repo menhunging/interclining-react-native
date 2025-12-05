@@ -19,10 +19,7 @@ const Index: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("useEffect index start");
-
-    if (isAuthenticated && !taskId) {
-      console.log("useEffect index start isAuthenticated", isAuthenticated);
+    if (isAuthenticated) {
       checkRoleAdmin(Number(userInfo.role))
         ? router.replace("/(tabs)/objects")
         : router.replace("/(tabs)/tasks");

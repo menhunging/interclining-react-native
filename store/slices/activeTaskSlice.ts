@@ -104,6 +104,28 @@ export const completeTask = createAsyncThunk(
   }
 );
 
+// Пауза таймера (останавливает но сохраняет время)
+export const pauseTaskTimer = createAsyncThunk(
+  "activeTask/pause",
+  async (_, thunkAPI) => {
+    const state = thunkAPI.getState() as { activeTask: ActiveTaskState };
+    const currentState = state.activeTask;
+
+    const elapsedSeconds = currentState.startTime
+      ? Math.floor((Date.now() - currentState.startTime) / 1000)
+      : currentState.currentTime;
+
+    const newState: ActiveTaskState = {
+      ...currentState,
+      isRunning: false,
+      currentTime: elapsedSeconds,
+    };
+
+    await saveToStorage(newState);
+    return newState;
+  }
+);
+
 // Обновить время таймера (для UI)
 export const updateTimer = createAsyncThunk(
   "activeTask/updateTimer",
@@ -148,6 +170,10 @@ const activeTaskSlice = createSlice({
       })
 
       .addCase(stopTaskTimer.fulfilled, (state, action) => {
+        Object.assign(state, action.payload);
+      })
+
+      .addCase(pauseTaskTimer.fulfilled, (state, action) => {
         Object.assign(state, action.payload);
       })
 
