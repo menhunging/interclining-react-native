@@ -1,10 +1,34 @@
 import ButtonUI from "@/components/ui/Button/ButtonUI";
 import FilterIcon from "@/components/ui/Icons/FilterIcon";
 import { COLORS } from "@/constants/colors";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import IconSearch from "../ui/Icons/IocnSearch";
 
-const Header = () => {
+interface HeaderProps {
+  onStatusPress?: (status: number) => void;
+  activeStatus?: number;
+}
+
+const statusItems: {
+  id: number;
+  label: string;
+  circleStyle: keyof typeof styles;
+}[] = [
+  { id: 1, label: "В работе", circleStyle: "inWorkCircle" },
+  { id: 2, label: "Выполнено", circleStyle: "doneCircle" },
+  { id: 3, label: "На паузе", circleStyle: "pauseCircle" },
+  { id: 4, label: "Пропуск", circleStyle: "skipCircle" },
+  { id: 5, label: "Плановые", circleStyle: "planCircle" },
+];
+
+const Header: React.FC<HeaderProps> = ({ onStatusPress, activeStatus = 1 }) => {
   return (
     <View style={styles.header}>
       <View style={styles.headerControls}>
@@ -21,31 +45,29 @@ const Header = () => {
           <FilterIcon />
         </ButtonUI>
       </View>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false} // убираем полоску скролла
         contentContainerStyle={styles.headerStatus}
       >
-        <View style={[styles.headerStatusText]}>
-          <View style={[styles.beforeElement, styles.inWorkCircle]} />
-          <Text>В работе</Text>
-        </View>
-        <View style={[styles.headerStatusText]}>
-          <View style={[styles.beforeElement, styles.doneCircle]} />
-          <Text>Выполнено</Text>
-        </View>
-        <View style={[styles.headerStatusText]}>
-          <View style={[styles.beforeElement, styles.pauseCircle]} />
-          <Text> На паузе</Text>
-        </View>
-        <View style={[styles.headerStatusText]}>
-          <View style={[styles.beforeElement, styles.skipCircle]} />
-          <Text>Пропуск</Text>
-        </View>
-        <View style={[styles.headerStatusText]}>
-          <View style={[styles.beforeElement, styles.planCircle]} />
-          <Text>Плановые</Text>
-        </View>
+        {statusItems.map(({ id, label, circleStyle }) => (
+          <TouchableOpacity
+            key={id}
+            style={[
+              styles.headerStatusText,
+              activeStatus === id ? styles.activeStatus : undefined,
+            ]}
+            onPress={() => onStatusPress?.(id)}
+          >
+            <View style={[styles.beforeElement, styles[circleStyle]]} />
+            <Text
+              style={activeStatus === id ? { color: COLORS.white } : undefined}
+            >
+              {label}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
     </View>
   );
@@ -100,36 +122,31 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 5,
   },
-  inWorkCircle: {
-    backgroundColor: "#2E5AEA",
-  },
-  doneCircle: {
-    backgroundColor: "#68F35C",
-  },
-  pauseCircle: {
-    backgroundColor: "#1E90FF",
-  },
-  skipCircle: {
-    backgroundColor: "#F35C5C",
-  },
-  planCircle: {
-    backgroundColor: "#8A2BE2",
-  },
+  inWorkCircle: { backgroundColor: "#2E5AEA" },
+  doneCircle: { backgroundColor: "#68F35C" },
+  pauseCircle: { backgroundColor: "#1E90FF" },
+  skipCircle: { backgroundColor: "#F35C5C" },
+  planCircle: { backgroundColor: "#8A2BE2" },
   beforeElement: {
     width: 12,
     height: 12,
     borderRadius: "50%",
   },
-
+  beforeElementActive: {
+    backgroundColor: COLORS.white,
+  },
   headerInputItem: {
     flex: 1,
   },
-
   headerInputItemIcon: {
     position: "absolute",
     zIndex: 1,
     top: 12,
     left: 13,
+  },
+  activeStatus: {
+    backgroundColor: COLORS.green,
+    color: COLORS.white,
   },
 });
 

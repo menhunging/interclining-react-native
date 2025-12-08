@@ -1,10 +1,11 @@
+import api from "@/api/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface ActiveTaskState {
   taskId: string | null;
   startTime: number | null; // timestamp когда таймер был запущен
-  currentTime: number; // текущее время в секундах
+  currentTime: string; // текущее время в секундах
   isRunning: boolean;
   loading: boolean;
 }
@@ -12,7 +13,7 @@ interface ActiveTaskState {
 const initialState: ActiveTaskState = {
   taskId: null,
   startTime: null,
-  currentTime: 0,
+  currentTime: "",
   isRunning: false,
   loading: false,
 };
@@ -59,11 +60,14 @@ export const loadActiveTask = createAsyncThunk(
 // Запустить таймер для задачи
 export const startTaskTimer = createAsyncThunk(
   "activeTask/start",
-  async (taskId: string, thunkAPI) => {
+  async (
+    { taskId, initialTime }: { taskId: string; initialTime: string },
+    thunkAPI
+  ) => {
     const state: ActiveTaskState = {
       taskId,
       startTime: Date.now(),
-      currentTime: 0,
+      currentTime: initialTime,
       isRunning: true,
       loading: false,
     };
@@ -105,26 +109,41 @@ export const completeTask = createAsyncThunk(
 );
 
 // Пауза таймера (останавливает но сохраняет время)
-export const pauseTaskTimer = createAsyncThunk(
-  "activeTask/pause",
-  async (_, thunkAPI) => {
-    const state = thunkAPI.getState() as { activeTask: ActiveTaskState };
-    const currentState = state.activeTask;
+export const pauseTaskTimer = createAsyncThunk<
+  ActiveTaskState,
+  {
+    photos: string[];
+    why_pause_description?: string | string[] | undefined;
+    why_pause_name?: string | undefined;
+    id?: string | string[] | undefined;
+    currentTime?: string;
+  },
+  { rejectValue: string }
+>("activeTask/pause", async (payload, thunkAPI) => {
+  const state = thunkAPI.getState() as { activeTask: ActiveTaskState };
+  const currentState = state.activeTask;
 
-    const elapsedSeconds = currentState.startTime
+  // Используем переданное время или рассчитываем его
+  const elapsedSeconds =
+    payload.currentTime ??
+    (currentState.startTime
       ? Math.floor((Date.now() - currentState.startTime) / 1000)
-      : currentState.currentTime;
+      : currentState.currentTime);
 
-    const newState: ActiveTaskState = {
-      ...currentState,
-      isRunning: false,
-      currentTime: elapsedSeconds,
-    };
+  const newState: ActiveTaskState = {
+    ...currentState,
+    isRunning: false,
+    currentTime: String(elapsedSeconds),
+  };
 
-    await saveToStorage(newState);
-    return newState;
-  }
-);
+  await saveToStorage(newState);
+
+  // Отправляем данные на сервер без currentTime в payload
+  const { currentTime, ...apiPayload } = payload;
+  await api.post("/pause_planner/", apiPayload);
+
+  return newState;
+});
 
 // Обновить время таймера (для UI)
 export const updateTimer = createAsyncThunk(
@@ -171,6 +190,10 @@ const activeTaskSlice = createSlice({
 
       .addCase(stopTaskTimer.fulfilled, (state, action) => {
         Object.assign(state, action.payload);
+      })
+
+      .addCase(pauseTaskTimer.pending, (state, action) => {
+        state.loading = true;
       })
 
       .addCase(pauseTaskTimer.fulfilled, (state, action) => {

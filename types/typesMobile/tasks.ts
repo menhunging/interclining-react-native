@@ -31,6 +31,7 @@ export interface initialStateTasks {
   error: string | null;
   DATA: ITask[];
   task: ITask | null;
+  taskPhotosUpload: string[];
 }
 
 export interface ITaskFormData {

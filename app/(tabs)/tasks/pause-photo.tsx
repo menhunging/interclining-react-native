@@ -5,7 +5,8 @@ import TextUI from "@/components/ui/Text/Text";
 import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
 import { pauseTaskTimer } from "@/store/slices/activeTaskSlice";
-import { useAppDispatch } from "@/store/store";
+import { uploadTaskPhotos } from "@/store/slices/tasksSlice";
+import { useAppDispatch, useAppSelector } from "@/store/store";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -25,13 +26,17 @@ const PausePhotoScreen: React.FC = () => {
 
   const router = useRouter();
 
-  const { id, reasons, customReason } = useLocalSearchParams();
+  const { id, reasons, customReason, currentTime } = useLocalSearchParams();
+
+  const { loading } = useAppSelector((state) => state.activeTask);
 
   // состояние камеры
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<
+    Array<{ uri: string; name: string; type: string }>
+  >([]);
   const cameraRef = useRef<CameraView>(null);
 
   // проверка разрешений камеры
@@ -56,7 +61,14 @@ const PausePhotoScreen: React.FC = () => {
           base64: false,
         });
         if (photo?.uri) {
-          setPhotos((prev) => [...prev, photo.uri]);
+          // Создаем объект файла для FormData
+          const fileName = `photo_${Date.now()}.jpg`;
+          const fileObj = {
+            uri: photo.uri,
+            name: fileName,
+            type: "image/jpeg",
+          };
+          setPhotos((prev) => [...prev, fileObj]);
           setShowCamera(false);
         }
       } catch (error) {
@@ -102,19 +114,37 @@ const PausePhotoScreen: React.FC = () => {
   const reasonsKEY: keyof typeof reasonOptions =
     reasons as keyof typeof reasonOptions;
 
+  const formatTime = (time: number) => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = time % 60;
+
+    const paddedHours = String(hours).padStart(2, "0");
+    const paddedMinutes = String(minutes).padStart(2, "0");
+    const paddedSeconds = String(seconds).padStart(2, "0");
+
+    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+  };
+
   const handleSend = async () => {
     try {
-      // Здесь будет логика отправки на сервер
+      // Сначала отправляем фото, если они есть
+      let uploadedPhotos: string[] = [];
+
+      if (photos.length > 0) {
+        uploadedPhotos = await dispatch(uploadTaskPhotos({ photos })).unwrap();
+      }
+
       const payload = {
-        ...(id && { taskId: id }),
-        ...(reasons && { reasons: reasonOptions[reasonsKEY] }),
-        ...(customReason && { customReason }),
-        // ...(photos?.length && { photos }),
+        ...(id && { id: id }),
+        ...(reasons && { why_pause_name: reasonOptions[reasonsKEY] }),
+        ...(customReason && { why_pause_description: customReason }),
+        photos: uploadedPhotos,
+        time: currentTime ? formatTime(Number(currentTime)) : undefined,
       };
-      console.log("Отправка паузы:", payload);
 
       // останавливаем таймер
-      await dispatch(pauseTaskTimer());
+      await dispatch(pauseTaskTimer(payload));
 
       router.dismissAll();
       router.replace(`/tasks/`);
@@ -154,7 +184,7 @@ const PausePhotoScreen: React.FC = () => {
               <View style={styles.photosGrid}>
                 {photos.map((photo, index) => (
                   <View key={index} style={styles.photoContainer}>
-                    <Image source={{ uri: photo }} style={styles.photo} />
+                    <Image source={{ uri: photo.uri }} style={styles.photo} />
                     <Pressable
                       style={styles.removePhotoBtn}
                       onPress={() => removePhoto(index)}
@@ -183,6 +213,7 @@ const PausePhotoScreen: React.FC = () => {
                   <ButtonUI
                     style={[styles.btn, styles.confirmBtn]}
                     onPress={handleSend}
+                    disabled={loading}
                   >
                     Отправить
                   </ButtonUI>

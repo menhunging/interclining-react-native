@@ -21,7 +21,7 @@ type PauseReason = "extra_work" | "late" | "other" | null;
 const PauseScreen: React.FC = () => {
   const { task } = useAppSelector((state) => state.tasks);
 
-  const { id } = useLocalSearchParams();
+  const { id, currentTime } = useLocalSearchParams();
 
   const router = useRouter();
 
@@ -65,6 +65,7 @@ const PauseScreen: React.FC = () => {
         id,
         reasons: selectedReasons,
         customReason: selectedReasons === "other" ? customReason : "",
+        currentTime,
       },
     });
   };
@@ -76,7 +77,7 @@ const PauseScreen: React.FC = () => {
           <View style={styles.headerWrapper}>
             <HeaderItem
               mode="fullScreenModal"
-              name={task?.name_zone || "Пауза"}
+              name={"Пауза"}
               desc="Не могу выполнить задание"
             />
           </View>
@@ -147,7 +148,11 @@ const PauseScreen: React.FC = () => {
                 <ButtonUI
                   style={[styles.btn]}
                   onPress={handleNext}
-                  disabled={Boolean(!selectedReasons)}
+                  disabled={
+                    selectedReasons === "other"
+                      ? Boolean(!customReason)
+                      : Boolean(!selectedReasons)
+                  }
                 >
                   Далее
                 </ButtonUI>

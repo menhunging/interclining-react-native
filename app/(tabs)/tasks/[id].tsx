@@ -32,7 +32,7 @@ const TaskScreen: React.FC<ITask> = () => {
   );
 
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [localTimer, setLocalTimer] = useState<number>(currentTime);
+  const [localTimer, setLocalTimer] = useState<number>(0);
 
   const isAdmin = checkRoleAdmin(Number(userInfo.role));
 
@@ -41,7 +41,12 @@ const TaskScreen: React.FC<ITask> = () => {
 
   const handleStart = async () => {
     if (id) {
-      await dispatch(startTaskTimer(id as string));
+      await dispatch(
+        startTaskTimer({
+          taskId: id as string,
+          initialTime: String(localTimer),
+        })
+      );
     }
   };
 
@@ -49,6 +54,12 @@ const TaskScreen: React.FC<ITask> = () => {
     // переходим на страницу завершения, таймер продолжает идти
     dispatch(updateTimerSync(localTimer));
     router.push(`/tasks/finish?id=${id}&timer=${localTimer}`);
+  };
+
+  // для парсинга времени из формата HH:MM:SS в секунды
+  const parseTimeToSeconds = (timeString: string): number => {
+    const [hours, minutes, seconds] = timeString.split(":").map(Number);
+    return hours * 3600 + minutes * 60 + seconds;
   };
 
   // для вывода времени в нашем формате
@@ -70,10 +81,22 @@ const TaskScreen: React.FC<ITask> = () => {
     }
   }, [id, dispatch]);
 
-  // синхронизируем локальный таймер с Redux только при изменении currentTime
+  // Инициализируем таймер каждый раз при загрузке новой задачи
   useEffect(() => {
-    setLocalTimer(currentTime);
-  }, [currentTime]);
+    if (task) {
+      const initialTime = task.time_current
+        ? parseTimeToSeconds(task.time_current)
+        : currentTime || 0;
+      setLocalTimer(Number(initialTime));
+    }
+  }, [task, currentTime]);
+
+  // Синхронизируем с Redux только если задача стала активной и мы не инициализированы с task.time_current
+  useEffect(() => {
+    if (isCurrentActiveTask && isRunning) {
+      setLocalTimer(Number(currentTime));
+    }
+  }, [currentTime, isCurrentActiveTask, isRunning]);
 
   // эффект для локального таймера в UI - только инкремент каждую секунду
   useEffect(() => {
@@ -99,6 +122,7 @@ const TaskScreen: React.FC<ITask> = () => {
                 name={task.name_zone}
                 desc={task.name}
                 taskId={id as string}
+                currentTime={localTimer}
               />
             </View>
             <ScrollView
@@ -109,6 +133,7 @@ const TaskScreen: React.FC<ITask> = () => {
                 <TextUI fontWeight="medium" style={styles.tasksDatesStart}>
                   {task.time_start.slice(0, -3)}
                 </TextUI>
+
                 <View style={styles.tasksDatesEnd}>
                   <IconFinish />
                   <TextUI fontWeight="medium" style={styles.tasksDatesEndText}>
@@ -126,27 +151,31 @@ const TaskScreen: React.FC<ITask> = () => {
                   <TextUI>{task.description}</TextUI>
                 </View>
 
-                <View style={styles.taskControls}>
-                  {isRunning && isCurrentActiveTask && (
-                    <TextUI style={styles.timer}>
-                      Таймер: {formatTime(localTimer)}
-                    </TextUI>
-                  )}
-
-                  <ButtonUI
-                    style={styles.btn}
-                    onPress={!isRunning ? handleStart : handleStop}
-                  >
-                    {isRunning ? (
-                      <View style={styles.btnContent}>
-                        <IconCheckCircle />
-                        <TextUI style={styles.btnContentText}>Завершить</TextUI>
-                      </View>
-                    ) : (
-                      "Начать"
+                {!isAdmin && task.status !== 2 && (
+                  <View style={styles.taskControls}>
+                    {isRunning && isCurrentActiveTask && (
+                      <TextUI style={styles.timer}>
+                        Таймер: {formatTime(localTimer)}
+                      </TextUI>
                     )}
-                  </ButtonUI>
-                </View>
+
+                    <ButtonUI
+                      style={styles.btn}
+                      onPress={!isRunning ? handleStart : handleStop}
+                    >
+                      {isRunning ? (
+                        <View style={styles.btnContent}>
+                          <IconCheckCircle />
+                          <TextUI style={styles.btnContentText}>
+                            Завершить
+                          </TextUI>
+                        </View>
+                      ) : (
+                        "Начать"
+                      )}
+                    </ButtonUI>
+                  </View>
+                )}
               </View>
             </ScrollView>
           </View>

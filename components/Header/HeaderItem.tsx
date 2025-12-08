@@ -1,9 +1,12 @@
 import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
+import { useAppSelector } from "@/store/store";
+import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
 import { useNavigation, useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import ButtonUI from "../ui/Button/ButtonUI";
 import IconBack from "../ui/Icons/IconBack";
+import IconEdit from "../ui/Icons/IconEdit";
 import IconPaused from "../ui/Icons/IconPaused";
 import TextUI from "../ui/Text/Text";
 
@@ -14,6 +17,7 @@ interface HeaderItem {
   desc: string | null;
   isRunningTimer?: boolean;
   taskId?: string;
+  currentTime?: number;
 }
 
 const HeaderItem: React.FC<HeaderItem> = ({
@@ -23,9 +27,14 @@ const HeaderItem: React.FC<HeaderItem> = ({
   mode,
   isRunningTimer,
   taskId,
+  currentTime,
 }) => {
   const navigation = useNavigation();
   const router = useRouter();
+
+  const { userInfo } = useAppSelector((state) => state.auth);
+
+  const isAdmin = checkRoleAdmin(Number(userInfo.role));
 
   return (
     <View
@@ -75,9 +84,24 @@ const HeaderItem: React.FC<HeaderItem> = ({
           <ButtonUI
             mode="btnIcon"
             style={styles.btnPaused}
-            onPress={() => taskId && router.push(`/tasks/pause?id=${taskId}`)}
+            onPress={() =>
+              taskId &&
+              router.push(
+                `/tasks/pause?id=${taskId}&currentTime=${currentTime || 0}`
+              )
+            }
           >
             <IconPaused />
+          </ButtonUI>
+        )}
+
+        {isAdmin && (
+          <ButtonUI
+            mode="btnIcon"
+            style={styles.btnEdit}
+            onPress={() => taskId && router.push(`/tasks/edit?id=${taskId}`)}
+          >
+            <IconEdit />
           </ButtonUI>
         )}
       </View>
@@ -153,6 +177,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.green,
   },
+
+  btnEdit: {},
 });
 
 export default HeaderItem;

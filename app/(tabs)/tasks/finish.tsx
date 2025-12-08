@@ -27,9 +27,7 @@ const FinishScreen: React.FC = () => {
 
   const { id, timer } = useLocalSearchParams();
 
-  const { taskId, currentTime, isRunning } = useAppSelector(
-    (state) => state.activeTask
-  );
+  const { taskId, isRunning } = useAppSelector((state) => state.activeTask);
 
   const router = useRouter();
 
@@ -54,7 +52,9 @@ const FinishScreen: React.FC = () => {
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<
+    Array<{ uri: string; name: string; type: string }>
+  >([]);
   const cameraRef = useRef<CameraView>(null);
 
   // Проверяем, является ли эта задача активной
@@ -107,7 +107,14 @@ const FinishScreen: React.FC = () => {
           base64: false,
         });
         if (photo?.uri) {
-          setPhotos((prev) => [...prev, photo.uri]);
+          // Создаем объект файла для FormData
+          const fileName = `photo_${Date.now()}.jpg`;
+          const fileObj = {
+            uri: photo.uri,
+            name: fileName,
+            type: "image/jpeg",
+          };
+          setPhotos((prev) => [...prev, fileObj]);
           setShowCamera(false);
         }
       } catch (error) {
@@ -123,21 +130,23 @@ const FinishScreen: React.FC = () => {
 
   const handleSend = async () => {
     try {
-      // console.log("Отправка фото:", photos);
-
       // останавливаем таймер перед отправкой
       await dispatch(stopTaskTimer());
 
+      let uploadedPhotos: string[] = [];
+
       // Сначала отправляем фото, если они есть
       if (photos.length > 0) {
-        await dispatch(uploadTaskPhotos({ taskId: id, photos })).unwrap();
+        uploadedPhotos = await dispatch(uploadTaskPhotos({ photos })).unwrap();
       }
 
       // Затем завершаем задачу с актуальным временем
       const formattedTime = formatTime(localTimer);
-      await dispatch(finishTask({ id, time: formattedTime })).unwrap();
+      await dispatch(
+        finishTask({ id, time: formattedTime, photos: uploadedPhotos })
+      ).unwrap();
 
-      router.push(`/tasks/success?id=${id}&timer=${formattedTime}`);
+      router.push(`/tasks/success`);
     } catch (error) {
       console.error("Ошибка при отправке:", error);
       Alert.alert("Ошибка", "Не удалось отправить данные. Попробуйте еще раз.");
@@ -174,7 +183,7 @@ const FinishScreen: React.FC = () => {
           <View style={styles.headerWrapper}>
             <HeaderItem
               mode="fullScreenModal"
-              name={task?.name_zone || "Фотографирование"}
+              name={"Завершение"}
               desc="Подтверждение выполнения"
             />
           </View>
@@ -202,7 +211,7 @@ const FinishScreen: React.FC = () => {
                 <View style={styles.photosGrid}>
                   {photos.map((photo, index) => (
                     <View key={index} style={styles.photoContainer}>
-                      <Image source={{ uri: photo }} style={styles.photo} />
+                      <Image source={{ uri: photo.uri }} style={styles.photo} />
                       <Pressable
                         style={styles.removePhotoBtn}
                         onPress={() => removePhoto(index)}

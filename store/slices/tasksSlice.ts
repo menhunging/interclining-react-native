@@ -5,22 +5,24 @@ import {
   ITaskFormData,
 } from "@/types/typesMobile/tasks";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import * as FileSystem from "expo-file-system/legacy";
 
 export const initialState: initialStateTasks = {
   loading: false,
   error: null,
   DATA: [],
   task: null,
+  taskPhotosUpload: [],
 };
 
 export const getTasksAll = createAsyncThunk<
   ITask[],
-  void,
+  { status?: number },
   { rejectValue: string }
->("tasks/getTasks", async (_, thunkAPI) => {
+>("tasks/getTasksAll", async ({ status = 1 }, thunkAPI) => {
   try {
-    const response = await api.post<ITaskFormData>("get_planner_user_all/");
+    const response = await api.post<ITaskFormData>("get_planner_user_all/", {
+      status: status,
+    });
 
     const { success, DATA, message } = response.data;
 
@@ -41,12 +43,13 @@ export const getTasksAll = createAsyncThunk<
 
 export const getTasksUser = createAsyncThunk<
   ITask[],
-  string | string[],
+  { id_user: string | string[]; status?: number },
   { rejectValue: string }
->("tasks/getTasksUser", async (id_user, thunkAPI) => {
+>("tasks/getTasksUser", async ({ id_user, status = 1 }, thunkAPI) => {
   try {
     const response = await api.post<ITaskFormData>("get_planner_user/", {
       id_user: id_user,
+      status: status,
     });
 
     const { success, DATA, message } = response.data;
@@ -90,21 +93,21 @@ export const finishTask = createAsyncThunk<
   {
     id: string | string[];
     time: string | string[];
+    photos: string[];
   },
   { rejectValue: string }
 >("tasks/finishTask", async (payload, thunkAPI) => {
   try {
     const response = await api.post<ITaskFormData>(
-      "/edit_planner_user_time_current/",
-      payload
+      // "/edit_planner_user_time_current/", - это старый запрос на изменение только таймера
+      "/success_planner/",
+      {
+        ...payload,
+        id_user_success: payload.id,
+      }
     );
 
     const { success, message } = response.data;
-
-    console.log(
-      "/edit_planner_user_time_current/ response.data",
-      response.data
-    );
 
     if (!success) {
       return thunkAPI.rejectWithValue(
@@ -119,64 +122,30 @@ export const finishTask = createAsyncThunk<
 });
 
 export const uploadTaskPhotos = createAsyncThunk<
-  boolean,
+  string[],
   {
-    taskId: string | string[];
-    photos: string[];
+    photos: Array<{ uri: string; name: string; type: string }>;
   },
   { rejectValue: string }
->("tasks/uploadTaskPhotos", async ({ taskId, photos }, thunkAPI) => {
+>("tasks/uploadTaskPhotos", async ({ photos }, thunkAPI) => {
   try {
     const formData = new FormData();
 
-    // Добавляем taskId
-    formData.append("task_id", taskId.toString());
-
-    // Добавляем каждое фото
-    for (let i = 0; i < photos.length; i++) {
-      const photoUri = photos[i];
-
-      // Получаем информацию о файле
-      const fileInfo = await FileSystem.getInfoAsync(photoUri);
-      if (!fileInfo.exists) {
-        throw new Error(`Файл не найден: ${photoUri}`);
-      }
-
-      // Определяем тип файла (обычно image/jpeg или image/png)
-      const fileType = photoUri.toLowerCase().endsWith(".png")
-        ? "image/png"
-        : "image/jpeg";
-
-      // Создаем объект файла для FormData
-      const file = {
-        uri: photoUri,
-        name: `photo_${i + 1}.${fileType.split("/")[1]}`,
-        type: fileType,
-      };
-
-      formData.append("photos", file as any);
-    }
-
-    // Создаем новый axios instance для multipart/form-data
-    const uploadApi = api.create({
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    photos.forEach((file) => {
+      formData.append("files[]", file as any);
     });
 
-    // TODO сделать отправку фото как будет бэк
+    const response = await api.post("/add_photos/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-    console.log("formData photo task", formData);
+    const { success, DATA, message } = response.data;
 
-    // const response = await uploadApi.post("/upload_task_photos/", formData);
+    if (!success) {
+      return thunkAPI.rejectWithValue(message || "Ошибка при загрузке фото");
+    }
 
-    // const { success, message } = response.data;
-
-    // if (!success) {
-    //   return thunkAPI.rejectWithValue(message || "Ошибка при загрузке фото");
-    // }
-
-    return true;
+    return DATA;
   } catch (err: any) {
     console.error("Ошибка загрузки фото:", err);
     return thunkAPI.rejectWithValue("Ошибка при загрузке фото");
@@ -202,7 +171,7 @@ const tasksSlice = createSlice({
         state.error = action.payload || "Ошибка";
       })
 
-      // getTasks
+      // getTasksAll
       .addCase(getTasksAll.pending, (state) => {
         state.loading = true;
         state.error = null;

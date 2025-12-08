@@ -55,7 +55,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   };
 
   const renderItem = ({ item }: { item: ITask }) => {
-    const { id, name, description, time_start, time_end, name_zone } = item;
+    const { id, name, description, time_start, time_end, name_zone,date_start} = item;
     const isActiveTask = taskId === id && isRunning;
 
     return (
@@ -73,20 +73,18 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
               {time_end.slice(0, -3)}
             </TextUI>
           </View>
-          {isActiveTask && (
-            <View style={styles.activeIndicator}>
-              <TextUI style={styles.activeText}>АКТИВНА</TextUI>
-            </View>
-          )}
+          <View style={styles.activeIndicator}>
+            <TextUI style={styles.activeText}>{date_start}</TextUI>
+          </View>
           <View style={styles.tasksIconArrowRight}>
             <IconArrowRight />
           </View>
         </View>
         <TextUI fontWeight="medium" style={styles.title}>
-          Зона: {name_zone}
+          Зона:
         </TextUI>
         <TextUI fontWeight="semibold" style={styles.name}>
-          {name}
+          {name_zone}
         </TextUI>
         <TextUI fontWeight="medium" style={styles.text}>
           {description}

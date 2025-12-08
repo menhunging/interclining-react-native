@@ -1,19 +1,17 @@
-import HeaderItem from "@/components/Header/HeaderItem";
 import ButtonUI from "@/components/ui/Button/ButtonUI";
 import IconBigCheckCircle from "@/components/ui/Icons/IconBigCheckCircle";
 import TextUI from "@/components/ui/Text/Text";
 import { COLORS } from "@/constants/colors";
 import { completeTask } from "@/store/slices/activeTaskSlice";
-import { useAppDispatch, useAppSelector } from "@/store/store";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useAppDispatch } from "@/store/store";
+import { useRouter } from "expo-router";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const SuccessScreen: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { task } = useAppSelector((state) => state.tasks);
+
   const router = useRouter();
-  const { id, timer } = useLocalSearchParams();
 
   const handleGoBack = async () => {
     // очищаем активную задачу
@@ -27,19 +25,7 @@ const SuccessScreen: React.FC = () => {
     <SafeAreaProvider>
       <SafeAreaView style={styles.wrapper} edges={["top", "right", "left"]}>
         <View style={styles.container}>
-          <View style={styles.headerWrapper}>
-            <HeaderItem
-              isRunningTimer={true}
-              mode="fullScreenModal"
-              name={task?.name_zone || "Успешно"}
-              desc={task?.name || "Успешно"}
-            />
-          </View>
-
-          <ScrollView
-            style={styles.main}
-            contentContainerStyle={styles.scrollContent}
-          >
+          <View style={styles.main}>
             <View style={styles.content}>
               <View style={styles.successIcon}>
                 <IconBigCheckCircle />
@@ -55,7 +41,7 @@ const SuccessScreen: React.FC = () => {
                 </ButtonUI>
               </View>
             </View>
-          </ScrollView>
+          </View>
         </View>
       </SafeAreaView>
     </SafeAreaProvider>

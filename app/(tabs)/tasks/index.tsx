@@ -10,7 +10,7 @@ import { getTasksAll, getTasksUser } from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 const Tasks = () => {
@@ -19,20 +19,28 @@ const Tasks = () => {
   const { DATA: tasks, loading } = useAppSelector((state) => state.tasks);
   const { userInfo, isAuthenticated } = useAppSelector((state) => state.auth);
 
-  const fetchTasks = async () => {
-    let user = userInfo;
+  const [currentStatus, setCurrentStatus] = useState<number>(1); // по умолчанию статус "В работе"
 
+  const fetchTasks = async (status?: number) => {
     if (!isAuthenticated || !userInfo.id || !userInfo.role) {
       await dispatch(authUser());
     }
 
     if (userInfo.id || userInfo.role) {
-      if (checkRoleAdmin(Number(user.role))) {
-        await dispatch(getTasksAll());
+      const statusToUse = status !== undefined ? status : currentStatus;
+      if (checkRoleAdmin(Number(userInfo.role))) {
+        await dispatch(getTasksAll({ status: statusToUse }));
       } else {
-        await dispatch(getTasksUser(user.id));
+        await dispatch(
+          getTasksUser({ id_user: userInfo.id, status: statusToUse })
+        );
       }
     }
+  };
+
+  const handleStatusPress = (status: number) => {
+    setCurrentStatus(status);
+    fetchTasks(status);
   };
 
   useFocusEffect(
@@ -44,7 +52,10 @@ const Tasks = () => {
   return (
     <View style={styles.container}>
       <View style={styles.headerWrapper}>
-        <Header />
+        <Header
+          onStatusPress={handleStatusPress}
+          activeStatus={currentStatus}
+        />
       </View>
       <View style={styles.main}>
         {loading && !tasks?.length ? (
