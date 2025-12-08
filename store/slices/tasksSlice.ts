@@ -93,18 +93,15 @@ export const finishTask = createAsyncThunk<
   {
     id: string | string[];
     time: string | string[];
-    photos: string[];
+    photos: string | string[];
   },
   { rejectValue: string }
 >("tasks/finishTask", async (payload, thunkAPI) => {
   try {
     const response = await api.post<ITaskFormData>(
-      // "/edit_planner_user_time_current/", - это старый запрос на изменение только таймера
+      // "/edit_planner_user_time_current/",
       "/success_planner/",
-      {
-        ...payload,
-        id_user_success: payload.id,
-      }
+      payload
     );
 
     const { success, message } = response.data;
@@ -135,11 +132,15 @@ export const uploadTaskPhotos = createAsyncThunk<
       formData.append("files[]", file as any);
     });
 
+    // TODO сделать отправку фото как будет бэк
+
     const response = await api.post("/add_photos/", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
     const { success, DATA, message } = response.data;
+
+    console.log("response.data photos", response.data);
 
     if (!success) {
       return thunkAPI.rejectWithValue(message || "Ошибка при загрузке фото");
@@ -149,6 +150,35 @@ export const uploadTaskPhotos = createAsyncThunk<
   } catch (err: any) {
     console.error("Ошибка загрузки фото:", err);
     return thunkAPI.rejectWithValue("Ошибка при загрузке фото");
+  }
+});
+
+export const editTaskByID = createAsyncThunk<
+  boolean,
+  {
+    id: string;
+    description: string;
+    id_user: string;
+    id_team: string;
+    time_start: string;
+    time_end: string;
+    duration: string;
+    date_start: string;
+  },
+  { rejectValue: string }
+>("tasks/editTaskByID", async (payload, thunkAPI) => {
+  try {
+    const response = await api.post("/edit_planner_user/", payload);
+
+    const { success, message } = response.data;
+
+    if (!success) {
+      return thunkAPI.rejectWithValue(message || "Ошибка при обновлении таски");
+    }
+
+    return success;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue("Ошибка при обновлении таски");
   }
 });
 
@@ -171,7 +201,7 @@ const tasksSlice = createSlice({
         state.error = action.payload || "Ошибка";
       })
 
-      // getTasksAll
+      // getTasks
       .addCase(getTasksAll.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -217,10 +247,29 @@ const tasksSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(uploadTaskPhotos.fulfilled, (state) => {
+      .addCase(uploadTaskPhotos.fulfilled, (state, action) => {
         state.loading = false;
+        // Полностью заменяем массив
+        state.taskPhotosUpload.splice(
+          0,
+          state.taskPhotosUpload.length,
+          ...action.payload
+        );
       })
       .addCase(uploadTaskPhotos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // editTaskByID
+      .addCase(editTaskByID.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editTaskByID.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(editTaskByID.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

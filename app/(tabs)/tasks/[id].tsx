@@ -151,6 +151,32 @@ const TaskScreen: React.FC<ITask> = () => {
                   <TextUI>{task.description}</TextUI>
                 </View>
 
+                {isAdmin && task.id_user ? (
+                  <>
+                    <View style={styles.taskCaption}>
+                      <IconDesc />
+                      <TextUI style={styles.taskCaptionText}>
+                        Исполнитель
+                      </TextUI>
+                    </View>
+                    <View>
+                      <TextUI>{task.name_user}</TextUI>
+                    </View>
+                  </>
+                ) : undefined}
+
+                {isAdmin && task.id_team ? (
+                  <>
+                    <View style={styles.taskCaption}>
+                      <IconDesc />
+                      <TextUI style={styles.taskCaptionText}>Команда</TextUI>
+                    </View>
+                    <View>
+                      <TextUI>{task.name_team}</TextUI>
+                    </View>
+                  </>
+                ) : undefined}
+
                 {!isAdmin && task.status !== 2 && (
                   <View style={styles.taskControls}>
                     {isRunning && isCurrentActiveTask && (
@@ -171,7 +197,7 @@ const TaskScreen: React.FC<ITask> = () => {
                           </TextUI>
                         </View>
                       ) : (
-                        "Начать"
+                        <TextUI style={styles.btnContentText}>Начать</TextUI>
                       )}
                     </ButtonUI>
                   </View>

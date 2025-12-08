@@ -1,7 +1,7 @@
 import type { Planner, PlannerForm } from "@/types/planner/planner";
 
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "@/api/api";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 interface PlannerState {
   loading: boolean;

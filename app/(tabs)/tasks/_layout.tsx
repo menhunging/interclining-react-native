@@ -38,6 +38,12 @@ const TaskStackLayout = () => {
           presentation: "fullScreenModal",
         }}
       />
+      <Stack.Screen
+        name="edit"
+        options={{
+          presentation: "fullScreenModal",
+        }}
+      />
     </Stack>
   );
 };

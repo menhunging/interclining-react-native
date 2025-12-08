@@ -55,8 +55,6 @@ export const authUser = createAsyncThunk<
     const response = await api.post<AuthResponse>("me/");
     const { success, message } = response.data;
 
-    console.log("me/", response.data);
-
     if (!success || typeof message === "string") {
       return thunkAPI.rejectWithValue(
         typeof message === "string" ? message : "Ошибка авторизации"

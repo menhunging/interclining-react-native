@@ -11,6 +11,7 @@ import IconPaused from "../ui/Icons/IconPaused";
 import TextUI from "../ui/Text/Text";
 
 interface HeaderItem {
+  edit?: boolean;
   mode?: "fullScreenModal" | "default";
   loading?: boolean;
   name: string | null;
@@ -24,6 +25,7 @@ const HeaderItem: React.FC<HeaderItem> = ({
   name,
   desc,
   loading,
+  edit,
   mode,
   isRunningTimer,
   taskId,
@@ -95,11 +97,11 @@ const HeaderItem: React.FC<HeaderItem> = ({
           </ButtonUI>
         )}
 
-        {isAdmin && (
+        {isAdmin && !edit && (
           <ButtonUI
             mode="btnIcon"
             style={styles.btnEdit}
-            onPress={() => taskId && router.push(`/tasks/edit?id=${taskId}`)}
+            onPress={() => taskId && router.push(`/tasks/edit`)}
           >
             <IconEdit />
           </ButtonUI>
