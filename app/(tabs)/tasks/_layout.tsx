@@ -11,37 +11,37 @@ const TaskStackLayout = () => {
       <Stack.Screen
         name="[id]"
         options={{
-          presentation: "fullScreenModal",
+          presentation: "card",
         }}
       />
       <Stack.Screen
         name="finish"
         options={{
-          presentation: "fullScreenModal",
+          presentation: "card",
         }}
       />
       <Stack.Screen
         name="success"
         options={{
-          presentation: "fullScreenModal",
+          presentation: "card",
         }}
       />
       <Stack.Screen
         name="pause"
         options={{
-          presentation: "fullScreenModal",
+          presentation: "card",
         }}
       />
       <Stack.Screen
         name="pause-photo"
         options={{
-          presentation: "fullScreenModal",
+          presentation: "card",
         }}
       />
       <Stack.Screen
         name="edit"
         options={{
-          presentation: "fullScreenModal",
+          presentation: "card",
         }}
       />
     </Stack>

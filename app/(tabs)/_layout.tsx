@@ -36,7 +36,7 @@ const TabsLayout = () => {
         tabBarActiveTintColor: COLORS.green,
         tabBarInactiveTintColor: COLORS.primary,
         headerShown: false,
-        tabBarStyle: hasActiveTask ? { display: "none" } : undefined,
+        // tabBarStyle: hasActiveTask ? { display: "none" } : undefined,
       }}
     >
       <Tabs.Screen

@@ -38,10 +38,9 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
     // Если есть активная задача и она не совпадает с выбранной
     if (taskId && isRunning && taskId !== taskIdParam) {
       Alert.alert(
-        "Невозможно перейти",
-        "Завершите текущую задачу перед началом новой",
+        "У вас уже есть запущенная задача",
+        "Завершите ее перед началом новой",
         [
-          { text: "ОК" },
           {
             text: "Перейти к активной",
             onPress: () => router.push(`/tasks/${taskId}`),
@@ -55,8 +54,9 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   };
 
   const renderItem = ({ item }: { item: ITask }) => {
-    const { id, name, description, time_start, time_end, name_zone,date_start} = item;
-    const isActiveTask = taskId === id && isRunning;
+    const { id, name, description, time_start, time_end, name_zone } = item;
+
+    const isActiveTask = String(taskId) === String(id) && isRunning;
 
     return (
       <TouchableOpacity
@@ -72,9 +72,6 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
             <TextUI fontWeight="medium" style={styles.tasksDatesEndText}>
               {time_end.slice(0, -3)}
             </TextUI>
-          </View>
-          <View style={styles.activeIndicator}>
-            <TextUI style={styles.activeText}>{date_start}</TextUI>
           </View>
           <View style={styles.tasksIconArrowRight}>
             <IconArrowRight />
@@ -124,9 +121,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bgGray,
     borderRadius: 14,
     gap: 8,
+    borderWidth: 2,
+    borderColor: COLORS.bgGray,
   },
   activeTask: {
-    backgroundColor: COLORS.green + "20", // полупрозрачный зеленый
     borderWidth: 2,
     borderColor: COLORS.green,
   },

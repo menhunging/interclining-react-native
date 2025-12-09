@@ -3,9 +3,12 @@ import ButtonUI from "@/components/ui/Button/ButtonUI";
 import IconCheckCircle from "@/components/ui/Icons/IconCheckCircle";
 import IconDesc from "@/components/ui/Icons/IconDesc";
 import IconFinish from "@/components/ui/Icons/iconFinish";
+import Preloader from "@/components/ui/Preloader/Preloader";
 import TextUI from "@/components/ui/Text/Text";
 import { COLORS } from "@/constants/colors";
 import {
+  leaveTaskSaveTimer,
+  loadActiveTask,
   startTaskTimer,
   updateTimerSync,
 } from "@/store/slices/activeTaskSlice";
@@ -13,7 +16,7 @@ import { getTaskById } from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { ITask } from "@/types/typesMobile/tasks";
 import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -22,12 +25,13 @@ const TaskScreen: React.FC<ITask> = () => {
   const { id } = useLocalSearchParams();
 
   const router = useRouter();
+  const navigation = useNavigation();
 
   const dispatch = useAppDispatch();
 
   const { userInfo } = useAppSelector((state) => state.auth);
-  const { task } = useAppSelector((state) => state.tasks);
-  const { taskId, currentTime, isRunning } = useAppSelector(
+  const { task, loading } = useAppSelector((state) => state.tasks);
+  const { taskId, currentTime, isRunning, hasLeaveTask } = useAppSelector(
     (state) => state.activeTask
   );
 
@@ -84,17 +88,26 @@ const TaskScreen: React.FC<ITask> = () => {
   // Инициализируем таймер каждый раз при загрузке новой задачи
   useEffect(() => {
     if (task) {
-      const initialTime = task.time_current
-        ? parseTimeToSeconds(task.time_current)
-        : currentTime || 0;
+      if (hasLeaveTask) {
+        dispatch(loadActiveTask());
+      }
+
+      // Если задача активна и была восстановлена из AsyncStorage (currentTime > 0),
+      // используем восстановленное время, иначе берем из базы данных
+      const initialTime =
+        isCurrentActiveTask && currentTime > 0
+          ? currentTime
+          : task.time_current
+          ? parseTimeToSeconds(task.time_current)
+          : 0;
       setLocalTimer(Number(initialTime));
     }
-  }, [task, currentTime]);
+  }, [task, currentTime, hasLeaveTask]);
 
   // Синхронизируем с Redux только если задача стала активной и мы не инициализированы с task.time_current
   useEffect(() => {
     if (isCurrentActiveTask && isRunning) {
-      setLocalTimer(Number(currentTime));
+      setLocalTimer(currentTime);
     }
   }, [currentTime, isCurrentActiveTask, isRunning]);
 
@@ -110,6 +123,21 @@ const TaskScreen: React.FC<ITask> = () => {
     }
   }, [isRunning]);
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+
+      // Обновляем время в Redux перед сохранением
+      dispatch(updateTimerSync(localTimer));
+      dispatch(leaveTaskSaveTimer(true));
+    });
+
+    return unsubscribe;
+  }, [navigation, localTimer, dispatch]);
+
   if (task) {
     return (
       <SafeAreaProvider>
@@ -123,87 +151,96 @@ const TaskScreen: React.FC<ITask> = () => {
                 desc={task.name}
                 taskId={id as string}
                 currentTime={localTimer}
+                loading={loading}
               />
             </View>
-            <ScrollView
-              style={styles.main}
-              contentContainerStyle={styles.scrollContent}
-            >
-              <View style={styles.tasksDates}>
-                <TextUI fontWeight="medium" style={styles.tasksDatesStart}>
-                  {task.time_start.slice(0, -3)}
-                </TextUI>
 
-                <View style={styles.tasksDatesEnd}>
-                  <IconFinish />
-                  <TextUI fontWeight="medium" style={styles.tasksDatesEndText}>
-                    {task.time_end.slice(0, -3)}
+            {!loading ? (
+              <ScrollView
+                style={styles.main}
+                contentContainerStyle={styles.scrollContent}
+              >
+                <View style={styles.tasksDates}>
+                  <TextUI fontWeight="medium" style={styles.tasksDatesStart}>
+                    {task.time_start.slice(0, -3)}
                   </TextUI>
-                </View>
-              </View>
 
-              <View style={styles.taskBlock}>
-                <View style={styles.taskCaption}>
-                  <IconDesc />
-                  <TextUI style={styles.taskCaptionText}>Описание</TextUI>
-                </View>
-                <View>
-                  <TextUI>{task.description}</TextUI>
-                </View>
-
-                {isAdmin && task.id_user ? (
-                  <>
-                    <View style={styles.taskCaption}>
-                      <IconDesc />
-                      <TextUI style={styles.taskCaptionText}>
-                        Исполнитель
-                      </TextUI>
-                    </View>
-                    <View>
-                      <TextUI>{task.name_user}</TextUI>
-                    </View>
-                  </>
-                ) : undefined}
-
-                {isAdmin && task.id_team ? (
-                  <>
-                    <View style={styles.taskCaption}>
-                      <IconDesc />
-                      <TextUI style={styles.taskCaptionText}>Команда</TextUI>
-                    </View>
-                    <View>
-                      <TextUI>{task.name_team}</TextUI>
-                    </View>
-                  </>
-                ) : undefined}
-
-                {!isAdmin && task.status !== 2 && (
-                  <View style={styles.taskControls}>
-                    {isRunning && isCurrentActiveTask && (
-                      <TextUI style={styles.timer}>
-                        Таймер: {formatTime(localTimer)}
-                      </TextUI>
-                    )}
-
-                    <ButtonUI
-                      style={styles.btn}
-                      onPress={!isRunning ? handleStart : handleStop}
+                  <View style={styles.tasksDatesEnd}>
+                    <IconFinish />
+                    <TextUI
+                      fontWeight="medium"
+                      style={styles.tasksDatesEndText}
                     >
-                      {isRunning ? (
-                        <View style={styles.btnContent}>
-                          <IconCheckCircle />
-                          <TextUI style={styles.btnContentText}>
-                            Завершить
-                          </TextUI>
-                        </View>
-                      ) : (
-                        <TextUI style={styles.btnContentText}>Начать</TextUI>
-                      )}
-                    </ButtonUI>
+                      {task.time_end.slice(0, -3)}
+                    </TextUI>
                   </View>
-                )}
-              </View>
-            </ScrollView>
+                </View>
+
+                <View style={styles.taskBlock}>
+                  <View style={styles.taskCaption}>
+                    <IconDesc />
+                    <TextUI style={styles.taskCaptionText}>Описание</TextUI>
+                  </View>
+                  <View>
+                    <TextUI>{task.description}</TextUI>
+                  </View>
+
+                  {isAdmin && task.id_user ? (
+                    <>
+                      <View style={styles.taskCaption}>
+                        <IconDesc />
+                        <TextUI style={styles.taskCaptionText}>
+                          Исполнитель
+                        </TextUI>
+                      </View>
+                      <View>
+                        <TextUI>{task.name_user}</TextUI>
+                      </View>
+                    </>
+                  ) : undefined}
+
+                  {isAdmin && task.id_team ? (
+                    <>
+                      <View style={styles.taskCaption}>
+                        <IconDesc />
+                        <TextUI style={styles.taskCaptionText}>Команда</TextUI>
+                      </View>
+                      <View>
+                        <TextUI>{task.name_team}</TextUI>
+                      </View>
+                    </>
+                  ) : undefined}
+
+                  {isAdmin && task.status !== 2 && (
+                    <View style={styles.taskControls}>
+                      {isRunning && isCurrentActiveTask && (
+                        <TextUI style={styles.timer}>
+                          Таймер: {formatTime(localTimer)}
+                        </TextUI>
+                      )}
+
+                      <ButtonUI
+                        style={styles.btn}
+                        onPress={!isRunning ? handleStart : handleStop}
+                      >
+                        {isRunning ? (
+                          <View style={styles.btnContent}>
+                            <IconCheckCircle />
+                            <TextUI style={styles.btnContentText}>
+                              Завершить
+                            </TextUI>
+                          </View>
+                        ) : (
+                          <TextUI style={styles.btnContentText}>Начать</TextUI>
+                        )}
+                      </ButtonUI>
+                    </View>
+                  )}
+                </View>
+              </ScrollView>
+            ) : (
+              <Preloader />
+            )}
           </View>
         </SafeAreaView>
       </SafeAreaProvider>

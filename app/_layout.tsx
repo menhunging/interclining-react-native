@@ -3,7 +3,7 @@ import { COLORS } from "@/constants/colors";
 import { store } from "@/store/store";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import { StyleSheet } from "react-native";
+import { StatusBar, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 
@@ -33,11 +33,12 @@ export default function RootLayout() {
               <Stack.Screen
                 name="index"
                 options={{
-                  gestureEnabled: false,
+                  gestureEnabled: true,
                 }}
               />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             </Stack>
+            <StatusBar barStyle="dark-content" backgroundColor={"#fff"} />
           </SafeAreaView>
         </SafeAreaProvider>
       </AppInitializer>

@@ -4,6 +4,7 @@ import {
   ITask,
   ITaskFormData,
 } from "@/types/typesMobile/tasks";
+import { formatDate } from "@/utils/formatDate";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 export const initialState: initialStateTasks = {
@@ -20,8 +21,14 @@ export const getTasksAll = createAsyncThunk<
   { rejectValue: string }
 >("tasks/getTasksAll", async ({ status = 1 }, thunkAPI) => {
   try {
+    const dateNow: string | null =
+      status !== 4 && status !== 5 ? formatDate(String(Date.now())) : null; // выводим все статусы только сегодня, кроме статусов Пропуск и Плановые
+
     const response = await api.post<ITaskFormData>("get_planner_user_all/", {
-      status: status,
+      filter: {
+        date: dateNow ? dateNow : undefined,
+        status: status,
+      },
     });
 
     const { success, DATA, message } = response.data;
@@ -47,9 +54,15 @@ export const getTasksUser = createAsyncThunk<
   { rejectValue: string }
 >("tasks/getTasksUser", async ({ id_user, status = 1 }, thunkAPI) => {
   try {
+    const dateNow: string | null =
+      status !== 4 && status !== 5 ? "2025-12-09" : null; // выводим все статусы только сегодня, кроме статусов Пропуск и Плановые
+
     const response = await api.post<ITaskFormData>("get_planner_user/", {
       id_user: id_user,
-      status: status,
+      filter: {
+        date: dateNow ? dateNow : undefined,
+        status: status,
+      },
     });
 
     const { success, DATA, message } = response.data;
