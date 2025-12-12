@@ -29,6 +29,15 @@ const Tasks = () => {
     id_teams: "",
   });
 
+  const [searchText, setSearchText] = useState("");
+
+  // Фильтруем задачи по поисковому запросу
+  const filteredTasks = tasks?.filter(
+    (task) =>
+      searchText === "" ||
+      task.name_zone?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   const fetchTasks = async (
     status?: number,
     filters?: {
@@ -82,16 +91,18 @@ const Tasks = () => {
           activeStatus={currentStatus}
           currentFilters={currentFilters}
           setCurrentFilters={setCurrentFilters}
+          searchText={searchText}
+          onSearchChange={setSearchText}
         />
       </View>
       <View style={styles.main}>
         {!initialized ? (
           <Preloader />
-        ) : tasks?.length > 0 ? (
+        ) : filteredTasks?.length > 0 ? (
           <TasksList
-            tasks={tasks}
+            tasks={filteredTasks}
             onRefresh={() => {
-              fetchTasks(currentStatus);
+              fetchTasks(currentStatus, currentFilters);
             }}
           />
         ) : (
@@ -101,7 +112,7 @@ const Tasks = () => {
             </TextUI>
             <ButtonUI
               onPress={() => {
-                fetchTasks(currentStatus);
+                fetchTasks(currentStatus, currentFilters);
               }}
               style={styles.btnReset}
             >

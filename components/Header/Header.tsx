@@ -30,6 +30,8 @@ interface HeaderProps {
     id_user: string;
     id_teams: string;
   }) => void;
+  searchText?: string;
+  onSearchChange?: (text: string) => void;
 }
 
 const statusItems: {
@@ -49,6 +51,8 @@ const Header: React.FC<HeaderProps> = ({
   activeStatus = 1,
   currentFilters = { id_object: "", id_user: "", id_zones: "", id_teams: "" },
   setCurrentFilters,
+  searchText = "",
+  onSearchChange,
 }) => {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
@@ -75,7 +79,9 @@ const Header: React.FC<HeaderProps> = ({
           </View>
           <TextInput
             style={styles.headerControlsInput}
-            placeholder="Поиск..."
+            placeholder="Поиск по зонам..."
+            value={searchText}
+            onChangeText={onSearchChange}
           />
         </View>
         <ButtonUI mode="btnIcon" onPress={handleFilterPress}>

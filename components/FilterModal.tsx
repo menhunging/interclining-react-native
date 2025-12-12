@@ -96,7 +96,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
     if (isAdmin) {
       await dispatch(getObjectById(selectedObjects));
     } else {
-      await dispatch(getObjectById(String(tasks[0]?.id_object)));
+      if (tasks) {
+        await dispatch(getObjectById(String(tasks[0]?.id_object)));
+      }
     }
   };
 
@@ -130,7 +132,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {isAdmin && (
+          {isAdmin ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Объекты</Text>
               <View style={styles.itemsContainer}>
@@ -176,7 +178,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 ))}
               </View>
             </View>
-          )}
+          ) : undefined}
 
           {/* если под админом то выводим только тогда когда выбран обьект и если не под админом выводим из обьекта который достаем из первого tasks */}
           {!loadObjectItem && ((isAdmin && selectedObjects) || !isAdmin) && (
@@ -218,7 +220,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
             </View>
           )}
 
-          {selectedObjects && !loadObjectItem && isAdmin && (
+          {selectedObjects && !loadObjectItem && isAdmin ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Команды</Text>
               {object?.users ? (
@@ -254,9 +256,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 <TextUI>В этом обьекте нет команды</TextUI>
               )}
             </View>
-          )}
+          ) : undefined}
 
-          {selectedObjects && !loadObjectItem && isAdmin && (
+          {selectedObjects && !loadObjectItem && isAdmin ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Сотрудники</Text>
               {object?.users ? (
@@ -292,14 +294,12 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 <TextUI>В этом обьекте нет сотрудников</TextUI>
               )}
             </View>
-          )}
+          ) : undefined}
         </ScrollView>
 
         <View style={styles.footer}>
           <ButtonUI onPress={handleClear} style={styles.btnClear}>
-            <TextUI style={styles.btnClearText}>
-              ✕ &nbsp; Очистить фильтры
-            </TextUI>
+            <TextUI style={styles.btnClearText}>✕ Очистить фильтры</TextUI>
           </ButtonUI>
           <ButtonUI onPress={handleApply}>Применить фильтр</ButtonUI>
         </View>
@@ -386,6 +386,8 @@ const styles = StyleSheet.create({
   btnClear: {
     marginBottom: 10,
     backgroundColor: "transparent",
+    gap: 20,
+    flexDirection: "row",
   },
   btnClearText: {
     color: COLORS.primary,

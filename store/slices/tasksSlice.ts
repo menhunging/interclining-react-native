@@ -81,23 +81,36 @@ export const getTasksUser = createAsyncThunk<
     id_user: string | string[];
     status?: number;
     filters?: {
-      id_zone?: string | string[];
-      id_object?: string | string[];
+      id_object?: string;
+      id_zones?: string;
+      id_user?: string;
+      id_teams?: string;
     };
   },
   { rejectValue: string }
 >("tasks/getTasksUser", async ({ id_user, status = 1, filters }, thunkAPI) => {
   try {
-    const dateNow: string | null =
-      status !== 4 && status !== 5 ? formatDate(Date.now()) : null; // выводим все статусы только сегодня, кроме статусов Пропуск и Плановые
+    let dateNow: string | null = null;
+    let date_from = "";
+    let date_to = "";
+
+    if (status == 5) {
+      status = 1;
+      date_from = formatDate(Date.now() + 1 * 24 * 60 * 60 * 1000); // Прибавляем один день
+      date_to = formatDate(Date.now() + 7 * 24 * 60 * 60 * 1000); // Прибавляем одну неделю
+    } else {
+      dateNow = status !== 4 ? formatDate(Date.now()) : null; // выводим все статусы только сегодня, кроме "Пропуск"
+    }
 
     const response = await api.post<ITaskFormData>("get_planner_user/", {
       id_user: id_user,
       filter: {
         date: dateNow ? dateNow : undefined,
         status: status,
-        ...(filters?.id_zone && { id_zone: filters.id_zone }),
         ...(filters?.id_object && { id_object: filters.id_object }),
+        ...(filters?.id_zones && { id_zone: filters.id_zones }),
+        ...(filters?.id_teams && { id_team: filters.id_teams }),
+        ...(filters?.id_user && { id_user: filters.id_user }),
       },
     });
 
