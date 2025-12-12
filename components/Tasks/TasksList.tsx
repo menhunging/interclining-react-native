@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import { useAppSelector } from "@/store/store";
 import { ITask } from "@/types/typesMobile/tasks";
+import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -11,6 +12,7 @@ import {
   View,
 } from "react-native";
 import IconArrowRight from "../ui/Icons/IconArrowRight";
+import IconClock from "../ui/Icons/IconClock";
 import IconFinish from "../ui/Icons/iconFinish";
 import TextUI from "../ui/Text/Text";
 
@@ -22,7 +24,10 @@ interface TasksListProps {
 
 const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   const router = useRouter();
+  const { userInfo } = useAppSelector((state) => state.auth);
   const { taskId, isRunning } = useAppSelector((state) => state.activeTask);
+
+  const isAdmin = checkRoleAdmin(Number(userInfo.role));
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -54,7 +59,19 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   };
 
   const renderItem = ({ item }: { item: ITask }) => {
-    const { id, name, description, time_start, time_end, name_zone } = item;
+    const {
+      id,
+      name_user,
+      surname_user,
+      description,
+      time_start,
+      time_end,
+      name_zone,
+      why_name,
+      why_description,
+      name_object,
+      date_start
+    } = item;
 
     const isActiveTask = String(taskId) === String(id) && isRunning;
 
@@ -73,10 +90,33 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
               {time_end.slice(0, -3)}
             </TextUI>
           </View>
+          {/* <View style={styles.tasksDatesEnd}>
+            <IconFinish />
+            <TextUI fontWeight="medium" style={styles.tasksDatesEndText}>
+              {date_start}
+            </TextUI>
+          </View> */}
+          {why_name && isAdmin && (
+            <View style={styles.taskClock}>
+              <IconClock />
+            </View>
+          )}
           <View style={styles.tasksIconArrowRight}>
             <IconArrowRight />
           </View>
         </View>
+        {why_name && isAdmin && (
+          <View style={styles.taskPaused}>
+            <View style={styles.taskPausedRow}>
+              <TextUI fontWeight="semibold" style={styles.title}>
+                Обьект:
+              </TextUI>
+              <TextUI fontWeight="semibold" style={styles.name}>
+                {name_object}
+              </TextUI>
+            </View>
+          </View>
+        )}
         <TextUI fontWeight="medium" style={styles.title}>
           Зона:
         </TextUI>
@@ -86,6 +126,26 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
         <TextUI fontWeight="medium" style={styles.text}>
           {description}
         </TextUI>
+        {why_name && isAdmin && (
+          <View style={styles.taskPaused}>
+            <View style={styles.taskPausedRow}>
+              <TextUI fontWeight="semibold" style={styles.title}>
+                Исполнитель:
+              </TextUI>
+              <TextUI fontWeight="semibold" style={styles.name}>
+                {name_user} {surname_user}
+              </TextUI>
+            </View>
+            <View style={styles.taskPausedRow}>
+              <TextUI fontWeight="medium" style={styles.title}>
+                Причина:
+              </TextUI>
+              <TextUI fontWeight="semibold" style={styles.name}>
+                {why_name || why_description}
+              </TextUI>
+            </View>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
@@ -171,6 +231,7 @@ const styles = StyleSheet.create({
     // Android
     elevation: 4, // подбирается экспериментально
   },
+  taskClock: {},
   tasksDatesEndText: {
     fontSize: 18,
   },
@@ -188,6 +249,16 @@ const styles = StyleSheet.create({
   },
   tasksIconArrowRight: {
     marginLeft: "auto",
+  },
+
+  taskPaused: {
+    marginTop: 20,
+    marginBottom: 10,
+    gap: 18,
+  },
+
+  taskPausedRow: {
+    gap: 8,
   },
 });
 

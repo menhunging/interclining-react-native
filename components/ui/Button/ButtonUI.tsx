@@ -27,8 +27,8 @@ const ButtonUI: React.FC<PropsWithChildren<IButton>> = ({
     <Pressable
       style={[
         isModeIcon ? styles.btnIcon : styles.btn,
-        disabled && styles.btnDisabled,
         style,
+        disabled && styles.btnDisabled,
       ]}
       disabled={disabled}
       {...rest}

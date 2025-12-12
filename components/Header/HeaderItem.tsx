@@ -97,7 +97,7 @@ const HeaderItem: React.FC<HeaderItem> = ({
           </ButtonUI>
         )}
 
-        {isAdmin && !edit && (
+        {isAdmin && edit && (
           <ButtonUI
             mode="btnIcon"
             style={styles.btnEdit}

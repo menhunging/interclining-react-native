@@ -3,12 +3,11 @@ import ButtonUI from "@/components/ui/Button/ButtonUI";
 import IconCheckCircle from "@/components/ui/Icons/IconCheckCircle";
 import IconDesc from "@/components/ui/Icons/IconDesc";
 import IconFinish from "@/components/ui/Icons/iconFinish";
+import ImageSlider from "@/components/ui/ImageSlider/ImageSlider";
 import Preloader from "@/components/ui/Preloader/Preloader";
 import TextUI from "@/components/ui/Text/Text";
 import { COLORS } from "@/constants/colors";
 import {
-  leaveTaskSaveTimer,
-  loadActiveTask,
   startTaskTimer,
   updateTimerSync,
 } from "@/store/slices/activeTaskSlice";
@@ -31,7 +30,7 @@ const TaskScreen: React.FC<ITask> = () => {
 
   const { userInfo } = useAppSelector((state) => state.auth);
   const { task, loading } = useAppSelector((state) => state.tasks);
-  const { taskId, currentTime, isRunning, hasLeaveTask } = useAppSelector(
+  const { taskId, currentTime, isRunning } = useAppSelector(
     (state) => state.activeTask
   );
 
@@ -88,28 +87,24 @@ const TaskScreen: React.FC<ITask> = () => {
   // Инициализируем таймер каждый раз при загрузке новой задачи
   useEffect(() => {
     if (task) {
-      if (hasLeaveTask) {
-        dispatch(loadActiveTask());
-      }
-
-      // Если задача активна и была восстановлена из AsyncStorage (currentTime > 0),
-      // используем восстановленное время, иначе берем из базы данных
+      // Если задача активна, используем время из Redux, иначе из базы данных
       const initialTime =
-        isCurrentActiveTask && currentTime > 0
+        isCurrentActiveTask && currentTime !== 0
           ? currentTime
           : task.time_current
           ? parseTimeToSeconds(task.time_current)
           : 0;
+
       setLocalTimer(Number(initialTime));
     }
-  }, [task, currentTime, hasLeaveTask]);
+  }, [task, currentTime]);
 
-  // Синхронизируем с Redux только если задача стала активной и мы не инициализированы с task.time_current
+  // Синхронизируем с Redux когда задача активна (включая паузу)
   useEffect(() => {
-    if (isCurrentActiveTask && isRunning) {
+    if (isCurrentActiveTask) {
       setLocalTimer(currentTime);
     }
-  }, [currentTime, isCurrentActiveTask, isRunning]);
+  }, [currentTime, isCurrentActiveTask]);
 
   // эффект для локального таймера в UI - только инкремент каждую секунду
   useEffect(() => {
@@ -123,21 +118,6 @@ const TaskScreen: React.FC<ITask> = () => {
     }
   }, [isRunning]);
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("beforeRemove", () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
-      }
-
-      // Обновляем время в Redux перед сохранением
-      dispatch(updateTimerSync(localTimer));
-      dispatch(leaveTaskSaveTimer(true));
-    });
-
-    return unsubscribe;
-  }, [navigation, localTimer, dispatch]);
-
   if (task) {
     return (
       <SafeAreaProvider>
@@ -146,6 +126,7 @@ const TaskScreen: React.FC<ITask> = () => {
             <View style={styles.headerWrapper}>
               <HeaderItem
                 isRunningTimer={isRunning}
+                edit={true}
                 mode={"fullScreenModal"}
                 name={task.name_zone}
                 desc={task.name}
@@ -185,6 +166,29 @@ const TaskScreen: React.FC<ITask> = () => {
                     <TextUI>{task.description}</TextUI>
                   </View>
 
+                  {isAdmin && task.status === 3 ? (
+                    <>
+                      <View style={styles.taskCaption}>
+                        <IconDesc />
+                        <TextUI style={styles.taskCaptionText}>
+                          Причина паузы
+                        </TextUI>
+                      </View>
+                      <View>
+                        <TextUI>
+                          {task.why_description
+                            ? task.why_description
+                            : task.why_name}
+                        </TextUI>
+                      </View>
+
+                      {task.why_pause_photo &&
+                        task.why_pause_photo.length > 0 && (
+                          <ImageSlider photos={task.why_pause_photo} />
+                        )}
+                    </>
+                  ) : undefined}
+
                   {isAdmin && task.id_user ? (
                     <>
                       <View style={styles.taskCaption}>
@@ -194,7 +198,9 @@ const TaskScreen: React.FC<ITask> = () => {
                         </TextUI>
                       </View>
                       <View>
-                        <TextUI>{task.name_user}</TextUI>
+                        <TextUI>
+                          {task.name_user} {task.surname_user}
+                        </TextUI>
                       </View>
                     </>
                   ) : undefined}
@@ -211,7 +217,7 @@ const TaskScreen: React.FC<ITask> = () => {
                     </>
                   ) : undefined}
 
-                  {isAdmin && task.status !== 2 && (
+                  {!isAdmin && task.status !== 2 && (
                     <View style={styles.taskControls}>
                       {isRunning && isCurrentActiveTask && (
                         <TextUI style={styles.timer}>

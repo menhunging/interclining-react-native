@@ -8,7 +8,6 @@ interface ActiveTaskState {
   currentTime: number; // текущее время в секундах
   isRunning: boolean;
   loading: boolean;
-  hasLeaveTask: boolean;
 }
 
 const initialState: ActiveTaskState = {
@@ -17,7 +16,6 @@ const initialState: ActiveTaskState = {
   currentTime: 0,
   isRunning: false,
   loading: false,
-  hasLeaveTask: false, // эффект если мы покинули активную таску
 };
 
 // Ключ для AsyncStorage
@@ -77,7 +75,6 @@ export const startTaskTimer = createAsyncThunk(
       currentTime: Number(initialTime),
       isRunning: true,
       loading: false,
-      hasLeaveTask: false,
     };
 
     await saveToStorage(state);
@@ -125,31 +122,30 @@ export const pauseTaskTimer = createAsyncThunk<
     why_pause_description?: string | string[] | undefined;
     why_pause_name?: string | undefined;
     id?: string | string[] | undefined;
-    currentTime?: string;
+    currentTime?: number;
   },
   { rejectValue: string }
 >("activeTask/pause", async (payload, thunkAPI) => {
   const state = thunkAPI.getState() as { activeTask: ActiveTaskState };
   const currentState = state.activeTask;
 
-  // Используем переданное время или рассчитываем его
-  const elapsedSeconds =
+  // Используем переданное время или рассчитываем текущее прошедшее время
+  const currentTimeValue =
     payload.currentTime ??
     (currentState.startTime
-      ? Math.floor((Date.now() - currentState.startTime) / 1000)
+      ? currentState.currentTime +
+        Math.floor((Date.now() - currentState.startTime) / 1000)
       : currentState.currentTime);
 
   const newState: ActiveTaskState = {
     ...currentState,
     isRunning: false,
-    currentTime: elapsedSeconds,
+    currentTime: currentTimeValue,
   };
 
   await saveToStorage(newState);
 
-  // Отправляем данные на сервер без currentTime в payload
-  const { currentTime, ...apiPayload } = payload;
-  await api.post("/pause_planner/", apiPayload);
+  await api.post("/pause_planner/", payload);
 
   return newState;
 });
@@ -179,12 +175,6 @@ const activeTaskSlice = createSlice({
     updateTimerSync: (state, action: PayloadAction<number>) => {
       state.currentTime = action.payload;
     },
-    leaveTaskSaveTimer: (state, action) => {
-      console.log("action.payload", action.payload);
-      state.hasLeaveTask = action.payload;
-      // Сохраняем в AsyncStorage сразу после изменения состояния
-      saveToStorage(state);
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -194,8 +184,6 @@ const activeTaskSlice = createSlice({
       .addCase(loadActiveTask.fulfilled, (state, action) => {
         state.loading = false;
         Object.assign(state, action.payload);
-        // Сбрасываем флаг после загрузки
-        state.hasLeaveTask = false;
       })
       .addCase(loadActiveTask.rejected, (state) => {
         state.loading = false;
@@ -227,5 +215,5 @@ const activeTaskSlice = createSlice({
   },
 });
 
-export const { updateTimerSync, leaveTaskSaveTimer } = activeTaskSlice.actions;
+export const { updateTimerSync } = activeTaskSlice.actions;
 export default activeTaskSlice.reducer;

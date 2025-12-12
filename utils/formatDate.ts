@@ -1,4 +1,4 @@
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: number): string {
   const date = new Date(dateString);
 
   const year = date.getFullYear();

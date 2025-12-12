@@ -31,6 +31,8 @@ const FinishScreen: React.FC = () => {
 
   const router = useRouter();
 
+  const [disabledBtnSend, setDisabledBtnSend] = useState<boolean>(false);
+
   // локальный таймер для продолжения отсчета
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [localTimer, setLocalTimer] = useState<number>(0);
@@ -129,6 +131,8 @@ const FinishScreen: React.FC = () => {
   };
 
   const handleSend = async () => {
+    setDisabledBtnSend(true);
+
     try {
       // останавливаем таймер перед отправкой
       await dispatch(stopTaskTimer());
@@ -145,10 +149,9 @@ const FinishScreen: React.FC = () => {
       await dispatch(
         finishTask({ id, time: formattedTime, photos: uploadedPhotos })
       ).unwrap();
-
-      router.push(`/tasks/success`);
+      setDisabledBtnSend(false);
+      router.replace(`/tasks/success`);
     } catch (error) {
-      console.error("Ошибка при отправке:", error);
       Alert.alert("Ошибка", "Не удалось отправить данные. Попробуйте еще раз.");
     }
   };
@@ -238,6 +241,7 @@ const FinishScreen: React.FC = () => {
                 )}
 
                 <ButtonUI
+                  disabled={disabledBtnSend}
                   style={styles.btn}
                   onPress={() => setShowCamera(true)}
                 >
@@ -246,6 +250,7 @@ const FinishScreen: React.FC = () => {
 
                 {photos.length > 0 && (
                   <ButtonUI
+                    disabled={disabledBtnSend}
                     style={[styles.btn, styles.sendBtn]}
                     onPress={handleSend}
                   >

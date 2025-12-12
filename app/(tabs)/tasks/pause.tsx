@@ -185,8 +185,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   scrollContent: {
-    paddingBottom: 20,
-    flex: 1,
+    paddingBottom: 50,
   },
   content: {
     flex: 1,
@@ -297,11 +296,9 @@ const styles = StyleSheet.create({
   },
   controls: {
     gap: 12,
-    marginTop: "auto",
+    marginTop: 20,
   },
-  btn: {
-    marginBottom: 0,
-  },
+  btn: {},
   sendBtn: {
     backgroundColor: COLORS.black,
   },

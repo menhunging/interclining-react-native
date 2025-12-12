@@ -9,45 +9,70 @@ import { authUser } from "@/store/slices/authSlice";
 import { getTasksAll, getTasksUser } from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 const Tasks = () => {
   const dispatch = useAppDispatch();
 
-  const { DATA: tasks, loading } = useAppSelector((state) => state.tasks);
+  const [initialized, setInitialized] = useState(false);
+
+  const { DATA: tasks } = useAppSelector((state) => state.tasks);
+
   const { userInfo, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [currentStatus, setCurrentStatus] = useState<number>(1); // по умолчанию статус "В работе"
+  const [currentFilters, setCurrentFilters] = useState({
+    id_object: "",
+    id_user: "",
+    id_zones: "",
+    id_teams: "",
+  });
 
-  const fetchTasks = async (status?: number) => {
-    if (!isAuthenticated || !userInfo.id || !userInfo.role) {
-      await dispatch(authUser());
+  const fetchTasks = async (
+    status?: number,
+    filters?: {
+      id_object: string;
+      id_zones: string;
+      id_user: string;
+      id_teams: string;
     }
-
-    if (userInfo.id || userInfo.role) {
-      const statusToUse = status !== undefined ? status : currentStatus;
-      if (checkRoleAdmin(Number(userInfo.role))) {
-        await dispatch(getTasksAll({ status: statusToUse }));
-      } else {
-        await dispatch(
-          getTasksUser({ id_user: userInfo.id, status: statusToUse })
-        );
-      }
+  ) => {
+    const statusToUse = status !== undefined ? status : currentStatus;
+    if (checkRoleAdmin(Number(userInfo.role))) {
+      await dispatch(getTasksAll({ status: statusToUse, filters: filters }));
+    } else {
+      await dispatch(
+        getTasksUser({
+          id_user: userInfo.id,
+          status: statusToUse,
+          filters: filters,
+        })
+      );
     }
   };
 
   const handleStatusPress = (status: number) => {
     setCurrentStatus(status);
-    fetchTasks(status);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchTasks();
-    }, [fetchTasks])
-  );
+  useEffect(() => {
+    if (!isAuthenticated || !userInfo.id || !userInfo.role) {
+      dispatch(authUser());
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (userInfo.id && userInfo.role) {
+      fetchTasks(currentStatus, currentFilters).then(() =>
+        setInitialized(true)
+      );
+    }
+  }, [currentStatus, userInfo]);
+
+  useEffect(() => {
+    fetchTasks(currentStatus, currentFilters);
+  }, [currentFilters]);
 
   return (
     <View style={styles.container}>
@@ -55,13 +80,20 @@ const Tasks = () => {
         <Header
           onStatusPress={handleStatusPress}
           activeStatus={currentStatus}
+          currentFilters={currentFilters}
+          setCurrentFilters={setCurrentFilters}
         />
       </View>
       <View style={styles.main}>
-        {loading && !tasks?.length ? (
+        {!initialized ? (
           <Preloader />
-        ) : tasks && tasks.length > 0 ? (
-          <TasksList tasks={tasks} onRefresh={fetchTasks} />
+        ) : tasks?.length > 0 ? (
+          <TasksList
+            tasks={tasks}
+            onRefresh={() => {
+              fetchTasks(currentStatus);
+            }}
+          />
         ) : (
           <View style={styles.emptyBlock}>
             <TextUI style={[baseStyle.emptyText, styles.empty]}>
@@ -69,7 +101,7 @@ const Tasks = () => {
             </TextUI>
             <ButtonUI
               onPress={() => {
-                fetchTasks();
+                fetchTasks(currentStatus);
               }}
               style={styles.btnReset}
             >

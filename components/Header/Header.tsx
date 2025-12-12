@@ -1,6 +1,7 @@
 import ButtonUI from "@/components/ui/Button/ButtonUI";
 import FilterIcon from "@/components/ui/Icons/FilterIcon";
 import { COLORS } from "@/constants/colors";
+import React, { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -9,11 +10,26 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import FilterModal from "../FilterModal";
 import IconSearch from "../ui/Icons/IocnSearch";
 
 interface HeaderProps {
   onStatusPress?: (status: number) => void;
   activeStatus?: number;
+  onFilterPress?: () => void;
+  currentStatus?: number;
+  currentFilters?: {
+    id_object: string;
+    id_zones: string;
+    id_user: string;
+    id_teams: string;
+  };
+  setCurrentFilters: (filters: {
+    id_object: string;
+    id_zones: string;
+    id_user: string;
+    id_teams: string;
+  }) => void;
 }
 
 const statusItems: {
@@ -28,7 +44,28 @@ const statusItems: {
   { id: 5, label: "Плановые", circleStyle: "planCircle" },
 ];
 
-const Header: React.FC<HeaderProps> = ({ onStatusPress, activeStatus = 1 }) => {
+const Header: React.FC<HeaderProps> = ({
+  onStatusPress,
+  activeStatus = 1,
+  currentFilters = { id_object: "", id_user: "", id_zones: "", id_teams: "" },
+  setCurrentFilters,
+}) => {
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+
+  const handleFilterPress = () => {
+    setFilterModalVisible(true);
+  };
+
+  const handleApplyFilters = (filters: {
+    id_object: string;
+    id_zones: string;
+    id_user: string;
+    id_teams: string;
+  }) => {
+    console.log("Applied filters:", filters);
+    setCurrentFilters && setCurrentFilters(filters);
+  };
+
   return (
     <View style={styles.header}>
       <View style={styles.headerControls}>
@@ -41,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ onStatusPress, activeStatus = 1 }) => {
             placeholder="Поиск..."
           />
         </View>
-        <ButtonUI mode="btnIcon">
+        <ButtonUI mode="btnIcon" onPress={handleFilterPress}>
           <FilterIcon />
         </ButtonUI>
       </View>
@@ -69,6 +106,13 @@ const Header: React.FC<HeaderProps> = ({ onStatusPress, activeStatus = 1 }) => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      <FilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onApply={handleApplyFilters}
+        initialFilters={currentFilters}
+      />
     </View>
   );
 };

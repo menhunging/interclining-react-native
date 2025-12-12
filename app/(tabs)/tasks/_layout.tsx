@@ -1,6 +1,9 @@
+import { useAppSelector } from "@/store/store";
 import { Stack } from "expo-router";
 
 const TaskStackLayout = () => {
+  const { isRunning } = useAppSelector((state) => state.activeTask);
+
   return (
     <Stack
       screenOptions={{
@@ -12,6 +15,7 @@ const TaskStackLayout = () => {
         name="[id]"
         options={{
           presentation: "card",
+          gestureEnabled: !isRunning,
         }}
       />
       <Stack.Screen
@@ -24,6 +28,7 @@ const TaskStackLayout = () => {
         name="success"
         options={{
           presentation: "card",
+          gestureEnabled: false,
         }}
       />
       <Stack.Screen

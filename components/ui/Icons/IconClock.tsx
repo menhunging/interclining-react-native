@@ -1,0 +1,21 @@
+import Svg, { Path } from "react-native-svg";
+
+const IconClock = ({ size = 14, color = "#6F7583" }) => (
+  <Svg width={size} height={size} viewBox="0 0 14 14" fill="none">
+    <Path
+      d="M7 13.5C10.5899 13.5 13.5 10.5899 13.5 7C13.5 3.41015 10.5899 0.5 7 0.5C3.41015 0.5 0.5 3.41015 0.5 7C0.5 10.5899 3.41015 13.5 7 13.5Z"
+      fill={color}
+      stroke={color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M7 0.5V7L11.6 11.6"
+      stroke="#F3F3F6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+export default IconClock;

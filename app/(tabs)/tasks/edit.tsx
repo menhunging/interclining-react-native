@@ -34,7 +34,7 @@ const TaskEditScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"Исполнитель" | "Команда">(
-    "Исполнитель"
+    task?.id_team ? "Команда" : "Исполнитель"
   );
 
   const executors =

@@ -30,6 +30,7 @@ const ObjectScreen = () => {
       <View style={styles.container}>
         <View style={styles.headerWrapper}>
           <HeaderItem
+            edit={false}
             name={obj.name}
             desc={String(obj.zones_count)}
             loading={loading}

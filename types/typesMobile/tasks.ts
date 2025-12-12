@@ -1,3 +1,10 @@
+export interface IPausePhoto {
+  id: number;
+  photo: string;
+  video: string;
+  id_planner_status_pause: number;
+}
+
 export interface ITask {
   binding_planner: number;
   data_create: string; // формат YYYY-MM-DD
@@ -17,7 +24,10 @@ export interface ITask {
   time_current: string | null; // формат HH:mm:ss
   time_end: string; // формат HH:mm:ss
   time_start: string; // формат HH:mm:ss
-  why_pause: string | null;
+  why_name: string | null;
+  why_pause: number | null;
+  why_description: string | null;
+  why_pause_photo: IPausePhoto[] | null;
 
   name_object: string;
   name_team: string;

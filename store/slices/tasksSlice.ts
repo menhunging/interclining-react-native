@@ -17,17 +17,44 @@ export const initialState: initialStateTasks = {
 
 export const getTasksAll = createAsyncThunk<
   ITask[],
-  { status?: number },
+  {
+    status?: number;
+    filters?: {
+      id_object?: string;
+      id_zones?: string;
+      id_user?: string;
+      id_teams?: string;
+    };
+  },
   { rejectValue: string }
->("tasks/getTasksAll", async ({ status = 1 }, thunkAPI) => {
+>("tasks/getTasksAll", async ({ status = 1, filters }, thunkAPI) => {
   try {
-    const dateNow: string | null =
-      status !== 4 && status !== 5 ? formatDate(String(Date.now())) : null; // выводим все статусы только сегодня, кроме статусов Пропуск и Плановые
+    let dateNow: string | null = null;
+    let date_from = "";
+    let date_to = "";
+
+    if (status == 5) {
+      status = 1;
+      date_from = formatDate(Date.now() + 1 * 24 * 60 * 60 * 1000); // Прибавляем один день
+      date_to = formatDate(Date.now() + 7 * 24 * 60 * 60 * 1000); // Прибавляем одну неделю
+    } else {
+      dateNow = status !== 4 ? formatDate(Date.now()) : null; // выводим все статусы только сегодня, кроме "Пропуск"
+    }
 
     const response = await api.post<ITaskFormData>("get_planner_user_all/", {
       filter: {
+        date_from: date_from ? date_from : undefined,
+        date_to: date_to ? date_to : undefined,
         date: dateNow ? dateNow : undefined,
         status: status,
+        ...(filters?.id_object && { id_object: filters.id_object }),
+        ...(filters?.id_zones && { id_zone: filters.id_zones }),
+        ...(filters?.id_teams && { id_team: filters.id_teams }),
+        ...(filters?.id_user && { id_user: filters.id_user }),
+        // ...(filters?.id_object && { id_object: String(filters.id_object) }),
+        // ...(filters?.id_zones && { id_zone: String(filters.id_zones) }),
+        // ...(filters?.id_teams && { id_team: String(filters.id_teams) }),
+        // ...(filters?.id_user && { id_user: String(filters.id_user) }),
       },
     });
 
@@ -50,18 +77,27 @@ export const getTasksAll = createAsyncThunk<
 
 export const getTasksUser = createAsyncThunk<
   ITask[],
-  { id_user: string | string[]; status?: number },
+  {
+    id_user: string | string[];
+    status?: number;
+    filters?: {
+      id_zone?: string | string[];
+      id_object?: string | string[];
+    };
+  },
   { rejectValue: string }
->("tasks/getTasksUser", async ({ id_user, status = 1 }, thunkAPI) => {
+>("tasks/getTasksUser", async ({ id_user, status = 1, filters }, thunkAPI) => {
   try {
     const dateNow: string | null =
-      status !== 4 && status !== 5 ? "2025-12-09" : null; // выводим все статусы только сегодня, кроме статусов Пропуск и Плановые
+      status !== 4 && status !== 5 ? formatDate(Date.now()) : null; // выводим все статусы только сегодня, кроме статусов Пропуск и Плановые
 
     const response = await api.post<ITaskFormData>("get_planner_user/", {
       id_user: id_user,
       filter: {
         date: dateNow ? dateNow : undefined,
         status: status,
+        ...(filters?.id_zone && { id_zone: filters.id_zone }),
+        ...(filters?.id_object && { id_object: filters.id_object }),
       },
     });
 
@@ -153,8 +189,6 @@ export const uploadTaskPhotos = createAsyncThunk<
 
     const { success, DATA, message } = response.data;
 
-    console.log("response.data photos", response.data);
-
     if (!success) {
       return thunkAPI.rejectWithValue(message || "Ошибка при загрузке фото");
     }
@@ -198,7 +232,11 @@ export const editTaskByID = createAsyncThunk<
 const tasksSlice = createSlice({
   name: "tasks",
   initialState,
-  reducers: {},
+  reducers: {
+    clearCurrentTask: (state) => {
+      state.task = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getTaskById.pending, (state) => {
@@ -249,6 +287,7 @@ const tasksSlice = createSlice({
       })
       .addCase(finishTask.fulfilled, (state) => {
         state.loading = false;
+        state.task = null;
       })
       .addCase(finishTask.rejected, (state, action) => {
         state.loading = false;
@@ -289,5 +328,5 @@ const tasksSlice = createSlice({
   },
 });
 
-export const {} = tasksSlice.actions;
+export const { clearCurrentTask } = tasksSlice.actions;
 export default tasksSlice.reducer;

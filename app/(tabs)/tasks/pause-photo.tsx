@@ -4,8 +4,8 @@ import IconBack from "@/components/ui/Icons/IconBack";
 import TextUI from "@/components/ui/Text/Text";
 import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
-import { pauseTaskTimer } from "@/store/slices/activeTaskSlice";
-import { uploadTaskPhotos } from "@/store/slices/tasksSlice";
+import { completeTask, pauseTaskTimer } from "@/store/slices/activeTaskSlice";
+import { clearCurrentTask, uploadTaskPhotos } from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -145,6 +145,10 @@ const PausePhotoScreen: React.FC = () => {
 
       // останавливаем таймер
       await dispatch(pauseTaskTimer(payload));
+
+      await dispatch(completeTask());
+
+      dispatch(clearCurrentTask());
 
       router.dismissAll();
       router.replace(`/tasks/`);
