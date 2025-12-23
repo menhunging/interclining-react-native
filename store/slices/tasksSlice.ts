@@ -105,6 +105,8 @@ export const getTasksUser = createAsyncThunk<
     const response = await api.post<ITaskFormData>("get_planner_user/", {
       id_user: id_user,
       filter: {
+        date_from: date_from ? date_from : undefined,
+        date_to: date_to ? date_to : undefined,
         date: dateNow ? dateNow : undefined,
         status: status,
         ...(filters?.id_object && { id_object: filters.id_object }),

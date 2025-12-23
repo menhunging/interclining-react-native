@@ -70,6 +70,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
       why_name,
       why_description,
       name_object,
+      status,
       date_start
     } = item;
 
@@ -96,7 +97,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
               {date_start}
             </TextUI>
           </View> */}
-          {why_name && isAdmin && (
+          {status === 3 && isAdmin && (
             <View style={styles.taskClock}>
               <IconClock />
             </View>
@@ -105,7 +106,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
             <IconArrowRight />
           </View>
         </View>
-        {why_name && isAdmin && (
+        {status === 3 && isAdmin && (
           <View style={styles.taskPaused}>
             <View style={styles.taskPausedRow}>
               <TextUI fontWeight="semibold" style={styles.title}>
@@ -126,7 +127,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
         <TextUI fontWeight="medium" style={styles.text}>
           {description}
         </TextUI>
-        {why_name && isAdmin && (
+        {status === 3 && isAdmin && (
           <View style={styles.taskPaused}>
             <View style={styles.taskPausedRow}>
               <TextUI fontWeight="semibold" style={styles.title}>

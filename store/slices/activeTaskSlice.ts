@@ -78,6 +78,8 @@ export const startTaskTimer = createAsyncThunk(
     };
 
     await saveToStorage(state);
+    await api.post("set_planner_status/", { id: taskId });
+
     return state;
   }
 );
