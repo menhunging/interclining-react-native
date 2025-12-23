@@ -80,6 +80,7 @@ const Header: React.FC<HeaderProps> = ({
           <TextInput
             style={styles.headerControlsInput}
             placeholder="Поиск по зонам..."
+            placeholderTextColor="#1C1C1C"
             value={searchText}
             onChangeText={onSearchChange}
           />

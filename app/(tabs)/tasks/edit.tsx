@@ -14,7 +14,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const TaskEditScreen: React.FC = () => {
@@ -146,7 +146,6 @@ const TaskEditScreen: React.FC = () => {
           <View style={styles.container}>
             <View style={styles.headerWrapper}>
               <HeaderItem
-                edit={true}
                 mode={"fullScreenModal"}
                 name={"Задача"}
                 desc={"Редактирование задачи"}
@@ -231,15 +230,29 @@ const TaskEditScreen: React.FC = () => {
                 </View>
 
                 <View style={styles.dateBlock}>
-                  <DateTimePicker
-                    value={selectedDate}
-                    mode="date"
-                    display="default"
-                    onChange={handleDateChange}
-                    minimumDate={new Date()}
-                    locale="ru-RU"
-                    themeVariant="light"
-                  />
+                  <TextUI
+                    style={styles.dateBlockText}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    {selectedDate.toLocaleDateString("ru-RU", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </TextUI>
+
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={selectedDate}
+                      mode="date"
+                      display={Platform.OS === "ios" ? "spinner" : "calendar"}
+                      onChange={handleDateChange}
+                      minimumDate={new Date()}
+                      maximumDate={new Date(new Date().getFullYear(), 11, 31)}
+                      themeVariant="light"
+                      locale={Platform.OS === "ios" ? "ru_RU" : undefined}
+                    />
+                  )}
                 </View>
 
                 <View style={styles.taskCaption}>
@@ -387,6 +400,15 @@ const styles = StyleSheet.create({
 
   dateBlock: {
     marginBottom: 16,
+  },
+
+  dateBlockText: {
+    backgroundColor: COLORS.bgGray,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 30,
+    flexDirection: "row",
+    alignSelf: "flex-start",
   },
 });
 
