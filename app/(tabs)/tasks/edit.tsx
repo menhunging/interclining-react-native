@@ -84,6 +84,7 @@ const TaskEditScreen: React.FC = () => {
         time_start: selectedStartTime,
         time_end: selectedEndTime,
         duration: selectedDuration,
+        status: 1, // ставим статус принудительно
         date_start: selectedDate.toISOString().split("T")[0], // Формат YYYY-MM-DD
       };
 
@@ -237,7 +238,7 @@ const TaskEditScreen: React.FC = () => {
                     onChange={handleDateChange}
                     minimumDate={new Date()}
                     locale="ru-RU"
-                    textColor="#1C1C1C"
+                    themeVariant="light"
                   />
                 </View>
 
@@ -386,7 +387,6 @@ const styles = StyleSheet.create({
 
   dateBlock: {
     marginBottom: 16,
-    color: COLORS.primary,
   },
 });
 
