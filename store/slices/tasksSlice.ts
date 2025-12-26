@@ -156,6 +156,7 @@ export const finishTask = createAsyncThunk<
   boolean,
   {
     id: string | string[];
+    id_user_success: string | string[];
     time: string | string[];
     photos: string | string[];
   },

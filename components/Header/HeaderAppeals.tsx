@@ -39,14 +39,12 @@ const statusItems: {
   label: string;
   circleStyle: keyof typeof styles;
 }[] = [
+  { id: 3, label: "Не назначено", circleStyle: "planCircle" },
   { id: 1, label: "В работе", circleStyle: "inWorkCircle" },
   { id: 2, label: "Выполнено", circleStyle: "doneCircle" },
-  { id: 3, label: "На паузе", circleStyle: "pauseCircle" },
-  { id: 4, label: "Пропуск", circleStyle: "skipCircle" },
-  { id: 5, label: "Плановые", circleStyle: "planCircle" },
 ];
 
-const Header: React.FC<HeaderProps> = ({
+const HeaderAppeals: React.FC<HeaderProps> = ({
   onStatusPress,
   activeStatus = 1,
   currentFilters = { id_object: "", id_user: "", id_zones: "", id_teams: "" },
@@ -176,7 +174,7 @@ const styles = StyleSheet.create({
   doneCircle: { backgroundColor: "#68F35C" },
   pauseCircle: { backgroundColor: "#1E90FF" },
   skipCircle: { backgroundColor: "#F35C5C" },
-  planCircle: { backgroundColor: "#8A2BE2" },
+  planCircle: { backgroundColor: "#777777" },
   beforeElement: {
     width: 12,
     height: 12,
@@ -200,4 +198,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Header;
+export default HeaderAppeals;

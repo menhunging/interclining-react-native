@@ -2,8 +2,8 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import type { TypedUseSelectorHook } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 
-// import appealsReducer from "./slices/appealsSlice";
 import activeTaskReducer from "./slices/activeTaskSlice";
+import appealsReducer from "./slices/appealsSlice";
 import authReducer, { logout } from "./slices/authSlice";
 import objectReducer from "./slices/objectSlice";
 import objectsReducer from "./slices/objectsSlice";
@@ -21,10 +21,9 @@ const reducers = combineReducers({
   tasks: tasksReducer,
   users: usersReducer,
   planner: plannerReducer,
-
+  appeals: appealsReducer,
   // zones: zonesReducer,
   // teams: teamsReducer,
-  // appeals: appealsReducer,
 });
 
 const rootReducer = (state: any, action: any) => {

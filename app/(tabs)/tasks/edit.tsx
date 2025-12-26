@@ -14,7 +14,13 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Platform, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const TaskEditScreen: React.FC = () => {
@@ -114,10 +120,9 @@ const TaskEditScreen: React.FC = () => {
   }, [task]);
 
   useEffect(() => {
-    if (!object) {
-      dispatch(getObjectById(String(task?.id_object)));
-    }
-  }, [object, dispatch]);
+    // при каждом заходе получаем обьект на всякий
+    dispatch(getObjectById(String(task?.id_object)));
+  }, [dispatch]);
 
   useEffect(() => {
     if (activeTab === "Исполнитель") {

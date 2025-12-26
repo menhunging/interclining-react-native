@@ -74,7 +74,7 @@ const HeaderItem: React.FC<HeaderItem> = ({
                   <TextUI style={styles.objectHeadZoneTitle}>{desc}</TextUI>
                 ) : (
                   <>
-                    <TextUI style={styles.objectHeadZoneTitle}>Зоны:</TextUI>
+                    <TextUI style={styles.objectHeadZoneTitle}>Зона:</TextUI>
                     <TextUI style={styles.countZone}>{desc}</TextUI>
                   </>
                 )}

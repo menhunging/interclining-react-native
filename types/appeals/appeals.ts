@@ -13,10 +13,11 @@ export interface Appeal {
   id_zone: number;
   id_user: number;
   id_team: number;
+  status: number | null;
 }
 
 export interface AppealsForm {
   success: boolean;
   message?: string | null;
-  DATA: Appeal[] | null;
+  DATA: Appeal[];
 }

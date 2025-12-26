@@ -24,6 +24,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 const FinishScreen: React.FC = () => {
   const dispatch = useAppDispatch();
   const { task } = useAppSelector((state) => state.tasks);
+  const { userInfo } = useAppSelector((state) => state.auth);
 
   const { id, timer } = useLocalSearchParams();
 
@@ -147,7 +148,12 @@ const FinishScreen: React.FC = () => {
       // Затем завершаем задачу с актуальным временем
       const formattedTime = formatTime(localTimer);
       await dispatch(
-        finishTask({ id, time: formattedTime, photos: uploadedPhotos })
+        finishTask({
+          id,
+          time: formattedTime,
+          photos: uploadedPhotos,
+          id_user_success: userInfo.id,
+        })
       ).unwrap();
       setDisabledBtnSend(false);
       router.replace(`/tasks/success`);

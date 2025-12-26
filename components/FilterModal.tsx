@@ -106,7 +106,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
     if (visible) {
       fetchObjects();
     }
-  }, [dispatch]);
+  }, [visible, dispatch]);
 
   useEffect(() => {
     if (visible) {
@@ -223,9 +223,9 @@ const FilterModal: React.FC<FilterModalProps> = ({
           {selectedObjects && !loadObjectItem && isAdmin ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Команды</Text>
-              {object?.users ? (
+              {object?.teams ? (
                 <View style={styles.itemsContainer}>
-                  {object?.teams.map((team) => (
+                  {object?.teams?.map((team) => (
                     <TouchableOpacity
                       key={team.id}
                       style={[
