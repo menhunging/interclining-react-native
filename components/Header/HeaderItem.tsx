@@ -51,7 +51,13 @@ const HeaderItem: React.FC<HeaderItem> = ({
           {!isRunningTimer && (
             <Pressable
               style={styles.objectHeadIcon}
-              onPress={() => navigation.goBack()}
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/(tabs)/tasks");
+                }
+              }}
             >
               <IconBack />
             </Pressable>

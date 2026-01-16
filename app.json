@@ -1,16 +1,20 @@
 {
   "expo": {
-    "name": "my-test-react-native-2",
-    "slug": "my-test-react-native-2",
+    "name": "Интерклининг",
+    "slug": "interclining",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mytestreactnative2",
+    "scheme": "interclining",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
+     "ios": {
+      "associatedDomains": ["applinks:http://devclear.ru/"]
+    },
+    "deepLinks": true,
     "permissions": {
       "CAMERA": {
         "description": "Allow app to access camera for QR code scanning"
@@ -25,7 +29,25 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.menhunging.mytestreactnative2"
+      "package": "com.menhunging.mytestreactnative2",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "devclear.ru",
+              "pathPattern": "/zone/.*"
+            },
+            {
+              "scheme": "http",
+              "host": "devclear.ru",
+              "pathPattern": "/zone/.*"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "output": "static",
@@ -55,6 +77,7 @@
       "eas": {
         "projectId": "f0b6427d-1eca-4c0b-b4af-70f06443147f"
       }
-    }
+    },
+    "owner": "menhunging"
   }
 }

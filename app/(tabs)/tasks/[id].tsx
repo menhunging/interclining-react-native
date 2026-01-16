@@ -219,11 +219,11 @@ const TaskScreen: React.FC<ITask> = () => {
 
                   {!isAdmin && task.status !== 2 && (
                     <View style={styles.taskControls}>
-                      {isRunning && isCurrentActiveTask && (
+                      {/* {isRunning && isCurrentActiveTask && (
                         <TextUI style={styles.timer}>
                           Таймер: {formatTime(localTimer)}
                         </TextUI>
-                      )}
+                      )} */}
 
                       <ButtonUI
                         style={styles.btn}

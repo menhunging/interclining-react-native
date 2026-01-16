@@ -2,20 +2,30 @@ import ObjectsList from "@/components/Objects/ObjectsList";
 import { COLORS } from "@/constants/colors";
 import { getObjects } from "@/store/slices/objectsSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
+import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
+import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 
 const Objects = () => {
   const { DATA: objects } = useAppSelector((state) => state.objects);
+  const { userInfo } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  const isAdmin = checkRoleAdmin(Number(userInfo.role));
 
   const fetchObjects = async () => {
     await dispatch(getObjects());
   };
 
   useEffect(() => {
+    if (!isAdmin) {
+      router.replace("/(tabs)/tasks");
+      return;
+    }
     fetchObjects();
-  }, [dispatch]);
+  }, [dispatch, isAdmin, router]);
 
   return (
     <View style={styles.container}>

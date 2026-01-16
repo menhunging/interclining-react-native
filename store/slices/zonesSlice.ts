@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "../../api/api";
 
 import type { zone, zoneResponse, zoneState } from "@/types/zones/zones";
@@ -7,6 +7,7 @@ import type { zone, zoneResponse, zoneState } from "@/types/zones/zones";
 export const initialState: zoneState = {
   loading: false,
   error: null,
+  currentTaskID: null,
 };
 
 export const addZone = createAsyncThunk<boolean, zone, { rejectValue: string }>(
@@ -81,6 +82,34 @@ export const deleteZone = createAsyncThunk<
   }
 });
 
+export const getZoneByID = createAsyncThunk<
+  string,
+  { id_user: string; id_zone: string },
+  { rejectValue: string }
+>("zones/getZoneByID", async (payload, thunkAPI) => {
+  try {
+    const response = await api.post("get_planner_user_zone/", {
+      id_user: payload.id_user,
+      id_zone: payload.id_zone,
+    });
+
+    const { success, DATA, message } = response.data;
+
+    if (!success) {
+      return thunkAPI.rejectWithValue(
+        message || "Ошибка при получении задач для зоны"
+      );
+    }
+
+    return DATA.id;
+  } catch (err: any) {
+    const error = err as { response?: { data?: { message?: string } } };
+    return thunkAPI.rejectWithValue(
+      error.response?.data?.message || "Ошибка при получении задач для зоны"
+    );
+  }
+});
+
 const zonesSlice = createSlice({
   name: "zones",
   initialState,
@@ -122,6 +151,20 @@ const zonesSlice = createSlice({
         state.loading = false;
       })
       .addCase(deleteZone.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // getZoneByID
+      .addCase(getZoneByID.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getZoneByID.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentTaskID = action.payload;
+      })
+      .addCase(getZoneByID.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

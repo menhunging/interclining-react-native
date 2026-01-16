@@ -229,20 +229,19 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   reasonIcon: {
-    width: 156,
-    height: 176,
+    width: "100%",
+    height: 120,
     borderRadius: 14,
     backgroundColor: COLORS.white,
     justifyContent: "center",
     alignItems: "center",
   },
   reasonImage: {
-    width: 130,
-    height: 130,
+    width: 100,
+    height: 100,
   },
   reasonText: {
     fontSize: 16,
-    maxWidth: 140,
   },
   reasonTextSelected: {
     color: COLORS.white,

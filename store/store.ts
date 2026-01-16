@@ -10,8 +10,8 @@ import objectsReducer from "./slices/objectsSlice";
 import plannerReducer from "./slices/plannerSlice";
 import tasksReducer from "./slices/tasksSlice";
 import usersReducer from "./slices/usersSlice";
+import zonesReducer from "./slices/zonesSlice";
 // import teamsReducer from "./slices/teamsSlice";
-// import zonesReducer from "./slices/zonesSlice";
 
 const reducers = combineReducers({
   activeTask: activeTaskReducer,
@@ -22,7 +22,7 @@ const reducers = combineReducers({
   users: usersReducer,
   planner: plannerReducer,
   appeals: appealsReducer,
-  // zones: zonesReducer,
+  zones: zonesReducer,
   // teams: teamsReducer,
 });
 

@@ -24,8 +24,9 @@ const Scan = () => {
     data: string;
   }) => {
     if (data) {
-      router.replace("/(tabs)/tasks");
-      // router.push(`/tasks/${data}`);
+      const url = data;
+      const id = url.split("/").pop();
+      router.replace(`/zone/${id}`);
     }
   };
 

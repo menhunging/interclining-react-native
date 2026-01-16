@@ -7,13 +7,19 @@ import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
 import { getAppeals } from "@/store/slices/appealsSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
+import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 const Appeals = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const { DATA: appeals } = useAppSelector((state) => state.appeals);
+  const { userInfo } = useAppSelector((state) => state.auth);
+
+  const isAdmin = checkRoleAdmin(Number(userInfo.role));
 
   const [initialized, setInitialized] = useState(false);
 
@@ -51,6 +57,11 @@ const Appeals = () => {
   };
 
   useEffect(() => {
+    if (!isAdmin) {
+      router.replace("/(tabs)/tasks");
+      return;
+    }
+
     if (!initialized) {
       fetchAppeals(currentStatus, currentFilters).then(() =>
         setInitialized(true)
@@ -58,7 +69,7 @@ const Appeals = () => {
     } else {
       fetchAppeals(currentStatus, currentFilters);
     }
-  }, [currentStatus, currentFilters, dispatch]);
+  }, [currentStatus, currentFilters, dispatch, isAdmin, router]);
 
   return (
     <View style={styles.container}>

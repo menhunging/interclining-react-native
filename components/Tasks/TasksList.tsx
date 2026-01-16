@@ -71,7 +71,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
       why_description,
       name_object,
       status,
-      date_start
+      date_start,
     } = item;
 
     const isActiveTask = String(taskId) === String(id) && isRunning;
