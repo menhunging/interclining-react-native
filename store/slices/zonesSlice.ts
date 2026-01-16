@@ -101,6 +101,8 @@ export const getZoneByID = createAsyncThunk<
       );
     }
 
+    console.log("DATA", DATA);
+
     return DATA.id;
   } catch (err: any) {
     const error = err as { response?: { data?: { message?: string } } };

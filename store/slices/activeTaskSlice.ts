@@ -78,7 +78,22 @@ export const startTaskTimer = createAsyncThunk(
     };
 
     await saveToStorage(state);
-    await api.post("set_planner_status/", { id: taskId });
+
+    await api.post("set_planner_active_status/", {
+      id: taskId,
+      time_start_fact: new Date().toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }), // просто время , когда нажали на кнопку старт, записываем в базу в формате 21:00
+    });
+
+    // await api.post("set_planner_status/", {
+    //   id: taskId,
+    //   time_start_fact: new Date().toLocaleTimeString("ru-RU", {
+    //     hour: "2-digit",
+    //     minute: "2-digit",
+    //   }), // просто время , когда нажали на кнопку старт, записываем в базу в формате 21:00
+    // });
 
     return state;
   }
