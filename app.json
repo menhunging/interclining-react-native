@@ -9,10 +9,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
-    },
-     "ios": {
-      "associatedDomains": ["applinks:http://devclear.ru/"]
+      "supportsTablet": true,
+      "associatedDomains": [
+        "applinks:http://devclear.ru/",
+        "applinks:expo.dev",
+        "applinks:u.expo.dev"
+      ],
+      "bundleIdentifier": "com.menhunging.mytestreactnative2",
+      "urlSchemes": ["my-test-react-native-2", "exp", "exps"]
     },
     "deepLinks": true,
     "permissions": {
@@ -43,6 +47,15 @@
               "scheme": "http",
               "host": "devclear.ru",
               "pathPattern": "/zone/.*"
+            },
+            {
+              "scheme": "my-test-react-native-2"
+            },
+            {
+              "scheme": "exp"
+            },
+            {
+              "scheme": "exps"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
