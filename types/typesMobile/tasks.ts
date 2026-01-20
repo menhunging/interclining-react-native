@@ -34,6 +34,8 @@ export interface ITask {
   name_user: string;
   name_zone: string;
   surname_user: string;
+  time_start_fact: string;
+  data_success: string;
 }
 
 export interface initialStateTasks {

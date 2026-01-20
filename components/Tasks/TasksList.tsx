@@ -14,6 +14,7 @@ import {
 import IconArrowRight from "../ui/Icons/IconArrowRight";
 import IconClock from "../ui/Icons/IconClock";
 import IconFinish from "../ui/Icons/iconFinish";
+import IconTaskInWork from "../ui/Icons/IconTaskInWork";
 import TextUI from "../ui/Text/Text";
 
 interface TasksListProps {
@@ -50,7 +51,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
             text: "Перейти к активной",
             onPress: () => router.push(`/tasks/${taskId}`),
           },
-        ]
+        ],
       );
       return;
     }
@@ -100,6 +101,11 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
           {status === 3 && isAdmin && (
             <View style={styles.taskClock}>
               <IconClock />
+            </View>
+          )}
+          {status === 7 && isAdmin && (
+            <View style={styles.taskClock}>
+              <IconTaskInWork />
             </View>
           )}
           <View style={styles.tasksIconArrowRight}>

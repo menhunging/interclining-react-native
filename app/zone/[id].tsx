@@ -13,25 +13,30 @@ export default function ZoneDeepLinkHandler() {
   const segments = useSegments();
 
   useEffect(() => {
-    console.log('ZoneDeepLinkHandler - segments:', segments);
-    console.log('ZoneDeepLinkHandler - id:', id);
-    console.log('ZoneDeepLinkHandler - userInfo:', userInfo);
+    console.log("ZoneDeepLinkHandler - segments:", segments);
+    console.log("ZoneDeepLinkHandler - id:", id);
+    console.log("ZoneDeepLinkHandler - userInfo:", userInfo);
 
     if (!id) {
-      console.log('ZoneDeepLinkHandler - no id, returning');
+      console.log("ZoneDeepLinkHandler - no id, returning");
       return;
     }
 
     const id_user = userInfo.id;
     const id_zone = id;
 
-    console.log('ZoneDeepLinkHandler - dispatching getZoneByID with:', { id_user, id_zone });
+    console.log("ZoneDeepLinkHandler - dispatching getZoneByID with:", {
+      id_user,
+      id_zone,
+    });
     dispatch(getZoneByID({ id_user, id_zone }));
   }, [id, userInfo, segments]);
 
   useEffect(() => {
     if (currentTaskID) {
       router.replace(`/(tabs)/tasks/${currentTaskID}`);
+    } else {
+      router.replace(`/(tabs)/tasks/`); // если таска не найдена, то переход просто на главную тасок
     }
   }, [currentTaskID]);
 

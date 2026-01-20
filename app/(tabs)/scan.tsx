@@ -26,6 +26,10 @@ const Scan = () => {
     if (data) {
       const url = data;
       const id = url.split("/").pop();
+
+      console.log("scan url", url);
+      console.log("scan id", id);
+
       router.replace(`/zone/${id}`);
     }
   };

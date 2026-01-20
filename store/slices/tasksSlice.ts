@@ -62,7 +62,7 @@ export const getTasksAll = createAsyncThunk<
 
     if (!success) {
       return thunkAPI.rejectWithValue(
-        message || "Ошибка при получении заданий"
+        message || "Ошибка при получении заданий",
       );
     }
 
@@ -70,7 +70,7 @@ export const getTasksAll = createAsyncThunk<
   } catch (err: any) {
     const error = err as { response?: { data?: { message?: string } } };
     return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Ошибка при получении всех заданий"
+      error.response?.data?.message || "Ошибка при получении всех заданий",
     );
   }
 });
@@ -120,7 +120,7 @@ export const getTasksUser = createAsyncThunk<
 
     if (!success) {
       return thunkAPI.rejectWithValue(
-        message || "Ошибка при получении объекта"
+        message || "Ошибка при получении объекта",
       );
     }
 
@@ -142,7 +142,7 @@ export const getTaskById = createAsyncThunk<
 
     if (!success) {
       return thunkAPI.rejectWithValue(
-        message || "Ошибка при получении объекта"
+        message || "Ошибка при получении объекта",
       );
     }
 
@@ -166,14 +166,16 @@ export const finishTask = createAsyncThunk<
     const response = await api.post<ITaskFormData>(
       // "/edit_planner_user_time_current/",
       "/success_planner/",
-      payload
+      payload,
     );
+
+    console.log("success_planner", payload);
 
     const { success, message } = response.data;
 
     if (!success) {
       return thunkAPI.rejectWithValue(
-        message || "Ошибка при получении объекта"
+        message || "Ошибка при получении объекта",
       );
     }
 
@@ -321,7 +323,7 @@ const tasksSlice = createSlice({
         state.taskPhotosUpload.splice(
           0,
           state.taskPhotosUpload.length,
-          ...action.payload
+          ...action.payload,
         );
       })
       .addCase(uploadTaskPhotos.rejected, (state, action) => {

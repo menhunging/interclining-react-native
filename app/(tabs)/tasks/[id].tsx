@@ -12,11 +12,12 @@ import {
   updateTimerSync,
 } from "@/store/slices/activeTaskSlice";
 import { getTaskById } from "@/store/slices/tasksSlice";
+import { clearCurrentTask } from "@/store/slices/zonesSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { ITask } from "@/types/typesMobile/tasks";
 import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
@@ -24,14 +25,14 @@ const TaskScreen: React.FC<ITask> = () => {
   const { id } = useLocalSearchParams();
 
   const router = useRouter();
-  const navigation = useNavigation();
 
   const dispatch = useAppDispatch();
 
+  const { currentTaskID } = useAppSelector((state) => state.zones); // если сканируем qr, currentTaskID  будет содержать taskID
   const { userInfo } = useAppSelector((state) => state.auth);
   const { task, loading } = useAppSelector((state) => state.tasks);
   const { taskId, currentTime, isRunning } = useAppSelector(
-    (state) => state.activeTask
+    (state) => state.activeTask,
   );
 
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -42,13 +43,15 @@ const TaskScreen: React.FC<ITask> = () => {
   // Проверяем, является ли эта задача активной
   const isCurrentActiveTask = taskId === id;
 
+  const [isAfterScanning, setAfterScanning] = useState(false);
+
   const handleStart = async () => {
     if (id) {
       await dispatch(
         startTaskTimer({
           taskId: id as string,
           initialTime: String(localTimer),
-        })
+        }),
       );
     }
   };
@@ -84,6 +87,21 @@ const TaskScreen: React.FC<ITask> = () => {
     }
   }, [id, dispatch]);
 
+  useEffect(() => {
+    if (currentTaskID) {
+      setAfterScanning(true);
+    }
+  }, [currentTaskID]);
+
+  // при размонтировании компонента currentTaskID будем очищать
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        dispatch(clearCurrentTask());
+      };
+    }, []),
+  );
+
   // Инициализируем таймер каждый раз при загрузке новой задачи
   useEffect(() => {
     if (task) {
@@ -92,8 +110,8 @@ const TaskScreen: React.FC<ITask> = () => {
         isCurrentActiveTask && currentTime !== 0
           ? currentTime
           : task.time_current
-          ? parseTimeToSeconds(task.time_current)
-          : 0;
+            ? parseTimeToSeconds(task.time_current)
+            : 0;
 
       setLocalTimer(Number(initialTime));
     }
@@ -205,6 +223,34 @@ const TaskScreen: React.FC<ITask> = () => {
                     </>
                   ) : undefined}
 
+                  {isAdmin && task.time_start_fact ? (
+                    <>
+                      <View style={styles.taskCaption}>
+                        <IconDesc />
+                        <TextUI style={styles.taskCaptionText}>
+                          Время начало (факт)
+                        </TextUI>
+                      </View>
+                      <View>
+                        <TextUI>{task.time_start_fact}</TextUI>
+                      </View>
+                    </>
+                  ) : undefined}
+
+                  {isAdmin && task.data_success ? (
+                    <>
+                      <View style={styles.taskCaption}>
+                        <IconDesc />
+                        <TextUI style={styles.taskCaptionText}>
+                          Время завершения (факт)
+                        </TextUI>
+                      </View>
+                      <View>
+                        <TextUI>{task.data_success}</TextUI>
+                      </View>
+                    </>
+                  ) : undefined}
+
                   {isAdmin && task.id_team ? (
                     <>
                       <View style={styles.taskCaption}>
@@ -225,21 +271,25 @@ const TaskScreen: React.FC<ITask> = () => {
                         </TextUI>
                       )} */}
 
-                      <ButtonUI
-                        style={styles.btn}
-                        onPress={!isRunning ? handleStart : handleStop}
-                      >
-                        {isRunning ? (
-                          <View style={styles.btnContent}>
-                            <IconCheckCircle />
+                      {(isAfterScanning || isRunning) && (
+                        <ButtonUI
+                          style={styles.btn}
+                          onPress={!isRunning ? handleStart : handleStop}
+                        >
+                          {isRunning ? (
+                            <View style={styles.btnContent}>
+                              <IconCheckCircle />
+                              <TextUI style={styles.btnContentText}>
+                                Завершить
+                              </TextUI>
+                            </View>
+                          ) : (
                             <TextUI style={styles.btnContentText}>
-                              Завершить
+                              Начать
                             </TextUI>
-                          </View>
-                        ) : (
-                          <TextUI style={styles.btnContentText}>Начать</TextUI>
-                        )}
-                      </ButtonUI>
+                          )}
+                        </ButtonUI>
+                      )}
                     </View>
                   )}
                 </View>

@@ -35,7 +35,7 @@ const Tasks = () => {
   const filteredTasks = tasks?.filter(
     (task) =>
       searchText === "" ||
-      task.name_zone?.toLowerCase().includes(searchText.toLowerCase())
+      task.name_zone?.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   const fetchTasks = async (
@@ -45,7 +45,7 @@ const Tasks = () => {
       id_zones: string;
       id_user: string;
       id_teams: string;
-    }
+    },
   ) => {
     const statusToUse = status !== undefined ? status : currentStatus;
     if (checkRoleAdmin(Number(userInfo.role))) {
@@ -56,7 +56,7 @@ const Tasks = () => {
           id_user: userInfo.id,
           status: statusToUse,
           filters: filters,
-        })
+        }),
       );
     }
   };
@@ -74,7 +74,7 @@ const Tasks = () => {
   useEffect(() => {
     if (userInfo.id && userInfo.role) {
       fetchTasks(currentStatus, currentFilters).then(() =>
-        setInitialized(true)
+        setInitialized(true),
       );
     }
   }, [currentStatus, userInfo]);
