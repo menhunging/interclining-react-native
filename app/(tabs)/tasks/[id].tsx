@@ -228,11 +228,15 @@ const TaskScreen: React.FC<ITask> = () => {
                       <View style={styles.taskCaption}>
                         <IconDesc />
                         <TextUI style={styles.taskCaptionText}>
-                          Время начало (факт)
+                          Дата/время начало (факт)
                         </TextUI>
                       </View>
                       <View>
-                        <TextUI>{task.time_start_fact}</TextUI>
+                        <TextUI>
+                          {task.date_start.split("-").reverse().join(".")}
+                          {" в "}
+                          {task.time_start_fact}
+                        </TextUI>
                       </View>
                     </>
                   ) : undefined}
@@ -242,11 +246,15 @@ const TaskScreen: React.FC<ITask> = () => {
                       <View style={styles.taskCaption}>
                         <IconDesc />
                         <TextUI style={styles.taskCaptionText}>
-                          Время завершения (факт)
+                          Дата/время завершения (факт)
                         </TextUI>
                       </View>
                       <View>
-                        <TextUI>{task.data_success}</TextUI>
+                        <TextUI>
+                          {task.date_start.split("-").reverse().join(".")}
+                          {" в "}
+                          {task.data_success}
+                        </TextUI>
                       </View>
                     </>
                   ) : undefined}

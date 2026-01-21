@@ -6,16 +6,17 @@ import { COLORS } from "@/constants/colors";
 import { getAppealByID } from "@/store/slices/appealsSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { formatDateTime } from "@/utils/formatDateTime";
+import { getFullPhotoUrl } from "@/utils/getFullPhotoUrl";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { JSX, useEffect } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Image, ScrollView, StyleSheet, View } from "react-native";
 
 const AppealScreen = () => {
   const router = useRouter();
 
   const dispatch = useAppDispatch();
   const { loading, currentAppeal: appeal } = useAppSelector(
-    (state) => state.appeals
+    (state) => state.appeals,
   );
 
   const { id } = useLocalSearchParams(); // получаем id из URL
@@ -121,27 +122,26 @@ const AppealScreen = () => {
                 {appeal.message}
               </TextUI>
             </View>
-            {/* TODO сделать фото рабочими */}
-            {/* <View>  
+            <View>
               <TextUI fontWeight="medium" style={styles.title}>
                 Фото:
               </TextUI>
               {appeal?.gallery?.map((item: { photo: string }, index) => (
                 <Image
                   key={index}
-                  source={{ uri: item.photo }}
+                  source={{ uri: getFullPhotoUrl(item.photo) }}
                   style={styles.image}
                   resizeMode="cover"
                 />
               ))}
-            </View> */}
+            </View>
           </View>
         </ScrollView>
         <View style={styles.controls}>
           <ButtonUI
             onPress={() => {
               router.push(
-                `/appeals/addTask?id=${id}&objID=${appeal.id_object}`
+                `/appeals/addTask?id=${id}&objID=${appeal.id_object}`,
               );
             }}
           >

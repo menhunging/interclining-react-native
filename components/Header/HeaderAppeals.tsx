@@ -39,7 +39,7 @@ const statusItems: {
   label: string;
   circleStyle: keyof typeof styles;
 }[] = [
-  { id: 3, label: "Не назначено", circleStyle: "planCircle" },
+  { id: 10, label: "Не назначено", circleStyle: "planCircle" },
   { id: 1, label: "В работе", circleStyle: "inWorkCircle" },
   { id: 2, label: "Выполнено", circleStyle: "doneCircle" },
 ];

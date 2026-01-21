@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 const Scan = () => {
+  const [scanned, setScanned] = useState(false);
+
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const router = useRouter();
 
@@ -23,13 +25,12 @@ const Scan = () => {
     type: string;
     data: string;
   }) => {
+    if (scanned) return;
+    setScanned(true);
+
     if (data) {
       const url = data;
       const id = url.split("/").pop();
-
-      console.log("scan url", url);
-      console.log("scan id", id);
-
       router.replace(`/zone/${id}`);
     }
   };
@@ -58,7 +59,7 @@ const Scan = () => {
         barcodeScannerSettings={{
           barcodeTypes: ["qr"],
         }}
-        onBarcodeScanned={handleBarCodeScanned}
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       />
     </View>
   );

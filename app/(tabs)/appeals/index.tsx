@@ -23,7 +23,7 @@ const Appeals = () => {
 
   const [initialized, setInitialized] = useState(false);
 
-  const [currentStatus, setCurrentStatus] = useState<number>(3); // по умолчанию статус "Не назначено"
+  const [currentStatus, setCurrentStatus] = useState<number>(10); // по умолчанию статус 10 "Не назначено"
   const [currentFilters, setCurrentFilters] = useState({
     id_object: "",
     id_user: "",
@@ -37,7 +37,7 @@ const Appeals = () => {
   const filteredAppeals = appeals?.filter(
     (appeal) =>
       searchText === "" ||
-      appeal.name_zone?.toLowerCase().includes(searchText.toLowerCase())
+      appeal.name_zone?.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   const handleStatusPress = (status: number) => {
@@ -51,7 +51,7 @@ const Appeals = () => {
       id_zones: string;
       id_user: string;
       id_teams: string;
-    }
+    },
   ) => {
     await dispatch(getAppeals({ status, filters }));
   };
@@ -64,7 +64,7 @@ const Appeals = () => {
 
     if (!initialized) {
       fetchAppeals(currentStatus, currentFilters).then(() =>
-        setInitialized(true)
+        setInitialized(true),
       );
     } else {
       fetchAppeals(currentStatus, currentFilters);

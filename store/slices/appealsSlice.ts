@@ -29,7 +29,7 @@ export const getAppeals = createAsyncThunk<
     };
   },
   { rejectValue: string }
->("appeals/getAppeals", async ({ status = 3, filters }, thunkAPI) => {
+>("appeals/getAppeals", async ({ status = 10, filters }, thunkAPI) => {
   try {
     // let dateNow: string | null = null;
     // let date_from = "";
@@ -100,7 +100,7 @@ export const addAppeal = createAsyncThunk<
 
     if (!success) {
       return thunkAPI.rejectWithValue(
-        message || "Ошибка при добавлении обращения"
+        message || "Ошибка при добавлении обращения",
       );
     }
 

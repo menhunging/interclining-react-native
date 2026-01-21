@@ -5,6 +5,7 @@ import type { zone, zoneResponse, zoneState } from "@/types/zones/zones";
 
 // зоны в самом обьекте, поэтому их нет как отдельных сущностей в state
 export const initialState: zoneState = {
+  status: "idle", // "idle" | "loading" | "succeeded" | "failed" // это статусы для сканипровани
   loading: false,
   error: null,
   currentTaskID: null,
@@ -101,7 +102,17 @@ export const getZoneByID = createAsyncThunk<
       );
     }
 
-    return DATA ? DATA.id : null;
+    if (Array.isArray(DATA)) {
+      // если пустой, почему то с бэка пустой массив приходит а не обьект или как раньше , крч будет так
+      console.log("ПУСТОЙ");
+
+      return thunkAPI.rejectWithValue(
+        message || "Ошибка при получении задач для зоны",
+      );
+    } else {
+      console.log("Данные прилши DATA.id, DATA.id");
+      return DATA.id;
+    }
   } catch (err: any) {
     const error = err as { response?: { data?: { message?: string } } };
     return thunkAPI.rejectWithValue(
@@ -116,6 +127,8 @@ const zonesSlice = createSlice({
   reducers: {
     clearCurrentTask(state) {
       state.currentTaskID = null;
+      state.status = "idle";
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -162,14 +175,20 @@ const zonesSlice = createSlice({
       // getZoneByID
       .addCase(getZoneByID.pending, (state) => {
         state.loading = true;
+        state.status = "loading";
         state.error = null;
+        state.currentTaskID = null;
       })
       .addCase(getZoneByID.fulfilled, (state, action) => {
         state.loading = false;
+        state.status = "succeeded";
         state.currentTaskID = action.payload;
+        state.error = null;
       })
       .addCase(getZoneByID.rejected, (state, action) => {
         state.loading = false;
+        state.status = "failed";
+        state.currentTaskID = null;
         state.error = action.payload as string;
       });
   },

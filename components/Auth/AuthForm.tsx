@@ -20,8 +20,8 @@ const AuthForm: React.FC = () => {
   } = useForm<IAuthFormData>({
     mode: "onChange",
     defaultValues: {
-      login: "admin",
-      password: "12345",
+      login: "",
+      password: "",
     },
   });
 

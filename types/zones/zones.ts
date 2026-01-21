@@ -9,6 +9,7 @@ export interface zone {
 }
 
 export interface zoneState {
+  status: "idle" | "loading" | "succeeded" | "failed";
   loading: boolean;
   error: string | null;
   message?: string;
