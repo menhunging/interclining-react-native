@@ -41,3 +41,9 @@ app-example
 # generated native folders
 /ios
 /android
+
+/encrypted-key.zip
+/pepk.jar
+/upload_certificate.pem
+/jks
+/encrypted-key/
