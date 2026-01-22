@@ -28,6 +28,9 @@ export default function RootLayout() {
               screenOptions={{
                 headerShown: false,
                 animation: "slide_from_right",
+                contentStyle: {
+                  backgroundColor: COLORS.white,
+                },
               }}
             >
               <Stack.Screen
