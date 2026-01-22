@@ -1,6 +1,6 @@
 import { Camera, CameraView } from "expo-camera";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 const Scan = () => {
@@ -17,6 +17,13 @@ const Scan = () => {
 
     getCameraPermissions();
   }, []);
+
+  // Сбрасываем состояние scanned при фокусе на страницу
+  useFocusEffect(
+    useCallback(() => {
+      setScanned(false);
+    }, [])
+  );
 
   const handleBarCodeScanned = ({
     type,

@@ -136,7 +136,8 @@ export const getTaskById = createAsyncThunk<
   { rejectValue: string }
 >("tasks/getTaskById", async (id, thunkAPI) => {
   try {
-    const response = await api.post("get_planner_user_id/", { id });
+    const decodedId = decodeURIComponent(String(id));
+    const response = await api.post("get_planner_user_id/", { id: decodedId });
 
     const { success, DATA, message } = response.data;
 
@@ -168,8 +169,6 @@ export const finishTask = createAsyncThunk<
       "/success_planner/",
       payload,
     );
-
-    console.log("success_planner", payload);
 
     const { success, message } = response.data;
 

@@ -13,7 +13,7 @@ export interface zoneState {
   loading: boolean;
   error: string | null;
   message?: string;
-  currentTaskID: string | null;
+  currentTask: any | null;
 }
 
 export interface zoneResponse {

@@ -8,7 +8,7 @@ export const initialState: zoneState = {
   status: "idle", // "idle" | "loading" | "succeeded" | "failed" // это статусы для сканипровани
   loading: false,
   error: null,
-  currentTaskID: null,
+  currentTask: null,
 };
 
 export const addZone = createAsyncThunk<boolean, zone, { rejectValue: string }>(
@@ -84,7 +84,7 @@ export const deleteZone = createAsyncThunk<
 });
 
 export const getZoneByID = createAsyncThunk<
-  string,
+  any,
   { id_user: string; id_zone: string },
   { rejectValue: string }
 >("zones/getZoneByID", async (payload, thunkAPI) => {
@@ -104,14 +104,11 @@ export const getZoneByID = createAsyncThunk<
 
     if (Array.isArray(DATA)) {
       // если пустой, почему то с бэка пустой массив приходит а не обьект или как раньше , крч будет так
-      console.log("ПУСТОЙ");
-
       return thunkAPI.rejectWithValue(
         message || "Ошибка при получении задач для зоны",
       );
     } else {
-      console.log("Данные прилши DATA.id, DATA.id");
-      return DATA.id;
+      return DATA;
     }
   } catch (err: any) {
     const error = err as { response?: { data?: { message?: string } } };
@@ -126,7 +123,12 @@ const zonesSlice = createSlice({
   initialState,
   reducers: {
     clearCurrentTask(state) {
-      state.currentTaskID = null;
+      state.currentTask = null;
+      state.status = "idle";
+      state.loading = false;
+      state.error = null;
+    },
+    resetStatus(state) {
       state.status = "idle";
       state.error = null;
     },
@@ -177,22 +179,22 @@ const zonesSlice = createSlice({
         state.loading = true;
         state.status = "loading";
         state.error = null;
-        state.currentTaskID = null;
+        state.currentTask = null;
       })
       .addCase(getZoneByID.fulfilled, (state, action) => {
         state.loading = false;
         state.status = "succeeded";
-        state.currentTaskID = action.payload;
+        state.currentTask = action.payload;
         state.error = null;
       })
       .addCase(getZoneByID.rejected, (state, action) => {
         state.loading = false;
         state.status = "failed";
-        state.currentTaskID = null;
+        state.currentTask = null;
         state.error = action.payload as string;
       });
   },
 });
 
-export const { clearCurrentTask } = zonesSlice.actions;
+export const { clearCurrentTask, resetStatus } = zonesSlice.actions;
 export default zonesSlice.reducer;

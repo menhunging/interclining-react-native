@@ -28,7 +28,7 @@ const TaskScreen: React.FC<ITask> = () => {
 
   const dispatch = useAppDispatch();
 
-  const { currentTaskID } = useAppSelector((state) => state.zones); // если сканируем qr, currentTaskID  будет содержать taskID
+  const { currentTask } = useAppSelector((state) => state.zones); // если сканируем qr, currentTask  будет содержать task объект
   const { userInfo } = useAppSelector((state) => state.auth);
   const { task, loading } = useAppSelector((state) => state.tasks);
   const { taskId, currentTime, isRunning } = useAppSelector(
@@ -88,10 +88,10 @@ const TaskScreen: React.FC<ITask> = () => {
   }, [id, dispatch]);
 
   useEffect(() => {
-    if (currentTaskID) {
+    if (currentTask) {
       setAfterScanning(true);
     }
-  }, [currentTaskID]);
+  }, [currentTask]);
 
   // при размонтировании компонента currentTaskID будем очищать
   useFocusEffect(
