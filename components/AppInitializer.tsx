@@ -10,7 +10,7 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({
   const router = useRouter();
   const pathname = usePathname();
   const { taskId, isRunning, loading } = useAppSelector(
-    (state) => state.activeTask
+    (state) => state.activeTask,
   );
   const hasInitialized = useRef(false);
 

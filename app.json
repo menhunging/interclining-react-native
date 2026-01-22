@@ -10,11 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "associatedDomains": [
-        "applinks:http://in-cleaning.ru/",
-        "applinks:expo.dev",
-        "applinks:u.expo.dev"
-      ],
+      "associatedDomains": ["applinks:in-cleaning.ru"],
       "bundleIdentifier": "com.menhunging.mytestreactnative2",
       "urlSchemes": ["my-test-react-native-2", "exp", "exps"]
     },
@@ -34,22 +30,16 @@
           "data": [
             {
               "scheme": "https",
-              "host": "in-cleaning.ru",
-              "pathPattern": "/zone/.*"
-            },
-            {
-              "scheme": "http",
-              "host": "in-cleaning.ru",
-              "pathPattern": "/zone/.*"
-            },
+              "host": "in-cleaning.ru"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "data": [
             {
               "scheme": "my-test-react-native-2"
-            },
-            {
-              "scheme": "exp"
-            },
-            {
-              "scheme": "exps"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
