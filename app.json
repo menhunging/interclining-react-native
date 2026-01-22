@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Интерклининг",
+    "name": "ИнтерКлининг",
     "slug": "my-test-react-native-2",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "associatedDomains": [
-        "applinks:http://devclear.ru/",
+        "applinks:http://in-cleaning.ru/",
         "applinks:expo.dev",
         "applinks:u.expo.dev"
       ],
@@ -34,12 +34,12 @@
           "data": [
             {
               "scheme": "https",
-              "host": "devclear.ru",
+              "host": "in-cleaning.ru",
               "pathPattern": "/zone/.*"
             },
             {
               "scheme": "http",
-              "host": "devclear.ru",
+              "host": "in-cleaning.ru",
               "pathPattern": "/zone/.*"
             },
             {

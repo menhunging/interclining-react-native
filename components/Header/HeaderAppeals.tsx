@@ -64,6 +64,8 @@ const HeaderAppeals: React.FC<HeaderProps> = ({
     id_user: string;
     id_teams: string;
   }) => {
+    console.log("123", filters);
+
     setCurrentFilters && setCurrentFilters(filters);
   };
 

@@ -46,26 +46,26 @@ const FilterModal: React.FC<FilterModalProps> = ({
   const dispatch = useAppDispatch();
 
   const [selectedObjects, setSelectedObjects] = useState<string>(
-    initialFilters.id_object
+    initialFilters.id_object,
   );
 
   const [selectedZones, setSelectedZones] = useState<string>(
-    initialFilters.id_zones
+    initialFilters.id_zones,
   );
 
   const [selectedUsers, setSelectedUsers] = useState<string>(
-    initialFilters.id_user
+    initialFilters.id_user,
   );
 
   const [selectedTeams, setSelectedTeams] = useState<string>(
-    initialFilters.id_teams
+    initialFilters.id_teams,
   );
 
   const { DATA: tasks } = useAppSelector((state) => state.tasks);
   const { userInfo } = useAppSelector((state) => state.auth);
   const { DATA: objects } = useAppSelector((state) => state.objects);
   const { data: object, loading: loadObjectItem } = useAppSelector(
-    (state) => state.object
+    (state) => state.object,
   );
 
   const isAdmin = checkRoleAdmin(Number(userInfo.role));
@@ -85,6 +85,12 @@ const FilterModal: React.FC<FilterModalProps> = ({
     setSelectedUsers("");
     setSelectedZones("");
     setSelectedObjects("");
+    onApply({
+      id_object: "",
+      id_zones: "",
+      id_user: "",
+      id_teams: "",
+    });
     onClose();
   };
 
