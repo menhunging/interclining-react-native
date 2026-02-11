@@ -18,6 +18,7 @@ interface HeaderItem {
   desc: string | null;
   isRunningTimer?: boolean;
   taskId?: string;
+  taskStatus?: number;
   currentTime?: number;
 }
 
@@ -29,6 +30,7 @@ const HeaderItem: React.FC<HeaderItem> = ({
   mode,
   isRunningTimer,
   taskId,
+  taskStatus,
   currentTime,
 }) => {
   const navigation = useNavigation();
@@ -103,7 +105,7 @@ const HeaderItem: React.FC<HeaderItem> = ({
           </ButtonUI>
         )}
 
-        {isAdmin && edit && (
+        {isAdmin && edit && taskStatus === 3 && (
           <ButtonUI
             mode="btnIcon"
             style={styles.btnEdit}
