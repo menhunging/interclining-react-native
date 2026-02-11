@@ -149,6 +149,7 @@ const TaskScreen: React.FC<ITask> = () => {
                 name={task.name_zone}
                 desc={task.name}
                 taskId={id as string}
+                taskStatus={Number(task.status)}
                 currentTime={localTimer}
                 loading={loading}
               />
@@ -273,11 +274,11 @@ const TaskScreen: React.FC<ITask> = () => {
 
                   {!isAdmin && task.status !== 2 && (
                     <View style={styles.taskControls}>
-                      {/* {isRunning && isCurrentActiveTask && (
+                      {isRunning && isCurrentActiveTask && (
                         <TextUI style={styles.timer}>
                           Таймер: {formatTime(localTimer)}
                         </TextUI>
-                      )} */}
+                      )}
 
                       {(isAfterScanning || isRunning) && (
                         <ButtonUI

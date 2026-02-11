@@ -47,3 +47,5 @@ app-example
 /upload_certificate.pem
 /jks
 /encrypted-key/
+
+.aab

@@ -1,4 +1,8 @@
-import { clearCurrentTask, getZoneByID, resetStatus } from "@/store/slices/zonesSlice";
+import {
+  clearCurrentTask,
+  getZoneByID,
+  resetStatus,
+} from "@/store/slices/zonesSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
@@ -30,6 +34,9 @@ export default function ZoneDeepLinkHandler() {
 
     // Отмечаем, что запрос начался
     requestStartedRef.current = true;
+
+    console.log("id_user", userInfo.id);
+    console.log("id_zone", id);
 
     dispatch(
       getZoneByID({

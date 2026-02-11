@@ -10,9 +10,22 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "associatedDomains": ["applinks:in-cleaning.ru"],
+      "associatedDomains": [
+        "applinks:in-cleaning.ru",
+        "applinks:in-cleaning.ru"
+      ],
       "bundleIdentifier": "com.menhunging.mytestreactnative2",
-      "urlSchemes": ["my-test-react-native-2", "exp", "exps"]
+      "urlSchemes": [
+        "my-test-react-native-2",
+        "exp",
+        "exps",
+        "my-test-react-native-2",
+        "exp",
+        "exps"
+      ],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "deepLinks": true,
     "permissions": {
@@ -33,7 +46,10 @@
               "host": "in-cleaning.ru"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         },
         {
           "action": "VIEW",
@@ -42,7 +58,10 @@
               "scheme": "my-test-react-native-2"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
