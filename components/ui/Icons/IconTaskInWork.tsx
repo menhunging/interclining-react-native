@@ -1,7 +1,7 @@
 import { COLORS } from "@/constants/colors";
 import Svg, { Path } from "react-native-svg";
 
-const IconTaskInWork = ({ width = 18, height = 18, color = COLORS.red }) => (
+const IconTaskInWork = ({ width = 18, height = 18, color = COLORS.gray }) => (
   <Svg width={width} height={height} viewBox="0 0 50 50">
     <Path
       d="M25,2C12.318,2,2,12.317,2,25s10.318,23,23,23s23-10.317,23-23S37.682,2,25,2z 

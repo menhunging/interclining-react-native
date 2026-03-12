@@ -62,6 +62,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   const renderItem = ({ item }: { item: ITask }) => {
     const {
       id,
+      name,
       name_user,
       surname_user,
       description,
@@ -89,7 +90,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
           <View style={styles.tasksDatesEnd}>
             <IconFinish />
             <TextUI fontWeight="medium" style={styles.tasksDatesEndText}>
-              {time_end.slice(0, -3)}
+              {time_end ? time_end.slice(0, -3) : " - "}
             </TextUI>
           </View>
           {/* <View style={styles.tasksDatesEnd}>
@@ -131,7 +132,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
           {name_zone}
         </TextUI>
         <TextUI fontWeight="medium" style={styles.text}>
-          {description}
+          {name}
         </TextUI>
         {status === 3 && isAdmin && (
           <View style={styles.taskPaused}>
