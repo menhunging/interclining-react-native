@@ -171,7 +171,7 @@ const TaskScreen: React.FC<ITask> = () => {
                       fontWeight="medium"
                       style={styles.tasksDatesEndText}
                     >
-                      {task.time_end.slice(0, -3)}
+                      {task.time_end ? task.time_end.slice(0, -3) : " - "}
                     </TextUI>
                   </View>
                 </View>
