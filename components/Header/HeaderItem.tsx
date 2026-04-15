@@ -2,7 +2,7 @@ import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
 import { useAppSelector } from "@/store/store";
 import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
-import { useNavigation, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 import ButtonUI from "../ui/Button/ButtonUI";
 import IconBack from "../ui/Icons/IconBack";
@@ -17,6 +17,8 @@ interface HeaderItem {
   name: string | null;
   desc: string | null;
   isRunningTimer?: boolean;
+  isActiveTask?: boolean;
+  scannedZoneId?: string;
   taskId?: string;
   taskStatus?: number;
   currentTime?: number;
@@ -29,11 +31,12 @@ const HeaderItem: React.FC<HeaderItem> = ({
   edit,
   mode,
   isRunningTimer,
+  isActiveTask,
+  scannedZoneId,
   taskId,
   taskStatus,
   currentTime,
 }) => {
-  const navigation = useNavigation();
   const router = useRouter();
 
   const { userInfo } = useAppSelector((state) => state.auth);
@@ -49,21 +52,23 @@ const HeaderItem: React.FC<HeaderItem> = ({
       }
     >
       <View style={styles.headerControls}>
-        <View style={[styles.objectHead, isRunningTimer && styles.notpadding]}>
-          {!isRunningTimer && (
-            <Pressable
-              style={styles.objectHeadIcon}
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.replace("/(tabs)/tasks");
-                }
-              }}
-            >
-              <IconBack />
-            </Pressable>
-          )}
+        <View style={[styles.objectHead]}>
+          <Pressable
+            style={styles.objectHeadIcon}
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace(
+                  scannedZoneId
+                    ? `/(tabs)/tasks?scannedZoneId=${encodeURIComponent(scannedZoneId)}`
+                    : "/(tabs)/tasks",
+                );
+              }
+            }}
+          >
+            <IconBack />
+          </Pressable>
 
           {loading ? (
             <>
@@ -90,15 +95,20 @@ const HeaderItem: React.FC<HeaderItem> = ({
             </>
           )}
         </View>
-        {isRunningTimer && (
+        {!isAdmin && taskId && (
           <ButtonUI
             mode="btnIcon"
             style={styles.btnPaused}
             onPress={() =>
-              taskId &&
-              router.push(
-                `/tasks/pause?id=${taskId}&currentTime=${currentTime || 0}`
-              )
+              router.push({
+                pathname: "/tasks/pause",
+                params: {
+                  id: taskId,
+                  currentTime: String(currentTime || 0),
+                  isActiveTask: isActiveTask ? "true" : "false",
+                  ...(scannedZoneId && { scannedZoneId }),
+                },
+              })
             }
           >
             <IconPaused />

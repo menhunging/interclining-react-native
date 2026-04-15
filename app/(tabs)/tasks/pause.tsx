@@ -21,7 +21,8 @@ type PauseReason = "extra_work" | "late" | "other" | null;
 const PauseScreen: React.FC = () => {
   const { task } = useAppSelector((state) => state.tasks);
 
-  const { id, currentTime } = useLocalSearchParams();
+  const { id, currentTime, isActiveTask, scannedZoneId } =
+    useLocalSearchParams();
 
   const router = useRouter();
 
@@ -66,6 +67,8 @@ const PauseScreen: React.FC = () => {
         reasons: selectedReasons,
         customReason: selectedReasons === "other" ? customReason : "",
         currentTime,
+        isActiveTask,
+        scannedZoneId,
       },
     });
   };

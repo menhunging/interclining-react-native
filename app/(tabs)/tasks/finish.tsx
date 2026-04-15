@@ -28,7 +28,9 @@ const FinishScreen: React.FC = () => {
 
   const { id, timer } = useLocalSearchParams();
 
-  const { taskId, isRunning } = useAppSelector((state) => state.activeTask);
+  const { taskId, isRunning, currentTime, startTime } = useAppSelector(
+    (state) => state.activeTask,
+  );
 
   const router = useRouter();
 
@@ -51,6 +53,18 @@ const FinishScreen: React.FC = () => {
     return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
   };
 
+  const getActualActiveTaskTime = () => {
+    if (!isCurrentActiveTask) {
+      return timer ? Number(timer) : 0;
+    }
+
+    if (!isRunning || !startTime) {
+      return currentTime;
+    }
+
+    return currentTime + Math.floor((Date.now() - startTime) / 1000);
+  };
+
   // состояние камеры
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
@@ -65,10 +79,8 @@ const FinishScreen: React.FC = () => {
 
   // инициализация локального таймера
   useEffect(() => {
-    if (timer) {
-      setLocalTimer(Number(timer));
-    }
-  }, [timer]);
+    setLocalTimer(getActualActiveTaskTime());
+  }, [timer, currentTime, isRunning, isCurrentActiveTask, startTime]);
 
   // эффект для локального таймера - только инкремент каждую секунду
   useEffect(() => {
@@ -97,7 +109,7 @@ const FinishScreen: React.FC = () => {
         [
           { text: "Отмена", style: "cancel" },
           { text: "Разрешить", onPress: requestPermission },
-        ]
+        ],
       );
     }
   }, [permission]);
@@ -153,7 +165,7 @@ const FinishScreen: React.FC = () => {
           time: formattedTime,
           photos: uploadedPhotos,
           id_user_success: userInfo.id,
-        })
+        }),
       ).unwrap();
       setDisabledBtnSend(false);
       router.replace(`/tasks/success`);
@@ -240,11 +252,11 @@ const FinishScreen: React.FC = () => {
               </View>
 
               <View style={styles.controls}>
-                {isRunning && isCurrentActiveTask && (
+                {/* {isRunning && isCurrentActiveTask && (
                   <TextUI style={styles.timer}>
                     Таймер: {formatTime(localTimer)}
                   </TextUI>
-                )}
+                )} */}
 
                 <ButtonUI
                   disabled={disabledBtnSend}
@@ -292,7 +304,7 @@ const FinishScreen: React.FC = () => {
                   style={styles.cameraBtn}
                   onPress={() =>
                     setFacing((current) =>
-                      current === "back" ? "front" : "back"
+                      current === "back" ? "front" : "back",
                     )
                   }
                 >

@@ -5,7 +5,11 @@ import TextUI from "@/components/ui/Text/Text";
 import { baseStyle } from "@/constants/baseStyle";
 import { COLORS } from "@/constants/colors";
 import { completeTask, pauseTaskTimer } from "@/store/slices/activeTaskSlice";
-import { clearCurrentTask, uploadTaskPhotos } from "@/store/slices/tasksSlice";
+import {
+  clearCurrentTask,
+  pauseTask,
+  uploadTaskPhotos,
+} from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -26,7 +30,8 @@ const PausePhotoScreen: React.FC = () => {
 
   const router = useRouter();
 
-  const { id, reasons, customReason, currentTime } = useLocalSearchParams();
+  const { id, reasons, customReason, currentTime, isActiveTask, scannedZoneId } =
+    useLocalSearchParams();
 
   const { loading } = useAppSelector((state) => state.activeTask);
 
@@ -113,6 +118,7 @@ const PausePhotoScreen: React.FC = () => {
 
   const reasonsKEY: keyof typeof reasonOptions =
     reasons as keyof typeof reasonOptions;
+  const isCurrentActiveTask = isActiveTask === "true";
 
   const formatTime = (time: number) => {
     const hours = Math.floor(time / 3600);
@@ -143,15 +149,21 @@ const PausePhotoScreen: React.FC = () => {
         time: currentTime ? formatTime(Number(currentTime)) : undefined,
       };
 
-      // останавливаем таймер
-      await dispatch(pauseTaskTimer(payload));
-
-      await dispatch(completeTask());
+      if (isCurrentActiveTask) {
+        await dispatch(pauseTaskTimer(payload)).unwrap();
+        await dispatch(completeTask());
+      } else {
+        await dispatch(pauseTask(payload)).unwrap();
+      }
 
       dispatch(clearCurrentTask());
 
       router.dismissAll();
-      router.replace(`/tasks/`);
+      router.replace(
+        scannedZoneId
+          ? `/tasks/?scannedZoneId=${encodeURIComponent(String(scannedZoneId))}`
+          : `/tasks/`,
+      );
     } catch (error) {
       console.error("Ошибка при отправке:", error);
       Alert.alert("Ошибка", "Не удалось отправить данные. Попробуйте еще раз.");

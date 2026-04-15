@@ -184,6 +184,34 @@ export const finishTask = createAsyncThunk<
   }
 });
 
+export const pauseTask = createAsyncThunk<
+  boolean,
+  {
+    id?: string | string[];
+    why_pause_description?: string | string[];
+    why_pause_name?: string;
+    photos: string[];
+    time?: string;
+  },
+  { rejectValue: string }
+>("tasks/pauseTask", async (payload, thunkAPI) => {
+  try {
+    const response = await api.post("/pause_planner/", payload);
+
+    const { success, message } = response.data;
+
+    if (!success) {
+      return thunkAPI.rejectWithValue(
+        message || "Ошибка при постановке задачи на паузу",
+      );
+    }
+
+    return success;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue("Ошибка при постановке задачи на паузу");
+  }
+});
+
 export const uploadTaskPhotos = createAsyncThunk<
   string[],
   {
@@ -307,6 +335,19 @@ const tasksSlice = createSlice({
         state.task = null;
       })
       .addCase(finishTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // pauseTask
+      .addCase(pauseTask.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(pauseTask.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(pauseTask.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

@@ -5,14 +5,12 @@ import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   FlatList,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import IconArrowRight from "../ui/Icons/IconArrowRight";
-import IconClock from "../ui/Icons/IconClock";
 import IconFinish from "../ui/Icons/iconFinish";
 import IconTaskInWork from "../ui/Icons/IconTaskInWork";
 import TextUI from "../ui/Text/Text";
@@ -21,9 +19,14 @@ interface TasksListProps {
   tasks: ITask[];
   loading?: boolean;
   onRefresh?: () => Promise<void> | void;
+  scannedZoneId?: string;
 }
 
-const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
+const TasksList: React.FC<TasksListProps> = ({
+  tasks,
+  onRefresh,
+  scannedZoneId,
+}) => {
   const router = useRouter();
   const { userInfo } = useAppSelector((state) => state.auth);
   const { taskId, isRunning } = useAppSelector((state) => state.activeTask);
@@ -31,6 +34,13 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   const isAdmin = checkRoleAdmin(Number(userInfo.role));
 
   const [refreshing, setRefreshing] = useState(false);
+
+  const getTaskRoute = (taskIdParam: string) => ({
+    pathname: "/tasks/[id]" as const,
+    params: scannedZoneId
+      ? { id: taskIdParam, scannedZoneId }
+      : { id: taskIdParam },
+  });
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -41,22 +51,7 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
   };
 
   const handleTaskPress = (taskIdParam: string) => {
-    // Если есть активная задача и она не совпадает с выбранной
-    if (taskId && isRunning && taskId !== taskIdParam) {
-      Alert.alert(
-        "У вас уже есть запущенная задача",
-        "Завершите ее перед началом новой",
-        [
-          {
-            text: "Перейти к активной",
-            onPress: () => router.push(`/tasks/${taskId}`),
-          },
-        ],
-      );
-      return;
-    }
-
-    router.push(`/tasks/${taskIdParam}`);
+    router.push(getTaskRoute(taskIdParam));
   };
 
   const renderItem = ({ item }: { item: ITask }) => {
@@ -99,11 +94,11 @@ const TasksList: React.FC<TasksListProps> = ({ tasks, onRefresh }) => {
               {date_start}
             </TextUI>
           </View> */}
-          {status === 3 && isAdmin && (
+          {/* {status === 3 && isAdmin && (
             <View style={styles.taskClock}>
               <IconClock />
             </View>
-          )}
+          )} */}
           {status === 7 && isAdmin && (
             <View style={styles.taskClock}>
               <IconTaskInWork />

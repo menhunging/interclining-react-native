@@ -9,11 +9,14 @@ import { authUser } from "@/store/slices/authSlice";
 import { getTasksAll, getTasksUser } from "@/store/slices/tasksSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
-import { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 const Tasks = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { scannedZoneId } = useLocalSearchParams<{ scannedZoneId?: string }>();
 
   const [initialized, setInitialized] = useState(false);
 
@@ -29,7 +32,42 @@ const Tasks = () => {
     id_teams: "",
   });
 
+  const scannedZoneIdValue = Array.isArray(scannedZoneId)
+    ? scannedZoneId[0]
+    : scannedZoneId;
+
   const [searchText, setSearchText] = useState("");
+
+  const handleSetCurrentFilters = (filters: {
+    id_object: string;
+    id_zones: string;
+    id_user: string;
+    id_teams: string;
+  }) => {
+    const isClearFilters =
+      !filters.id_object &&
+      !filters.id_zones &&
+      !filters.id_user &&
+      !filters.id_teams;
+
+    setCurrentFilters(filters);
+
+    if (isClearFilters) {
+      setSearchText("");
+
+      if (scannedZoneIdValue) {
+        router.replace("/(tabs)/tasks");
+      }
+    }
+  };
+
+  const effectiveFilters = useMemo(
+    () => ({
+      ...currentFilters,
+      id_zones: scannedZoneIdValue || currentFilters.id_zones,
+    }),
+    [currentFilters, scannedZoneIdValue],
+  );
 
   // Фильтруем задачи по поисковому запросу
   const filteredTasks = tasks?.filter(
@@ -47,6 +85,10 @@ const Tasks = () => {
       id_teams: string;
     },
   ) => {
+    if (!userInfo.id || !userInfo.role) {
+      return;
+    }
+
     const statusToUse = status !== undefined ? status : currentStatus;
     if (checkRoleAdmin(Number(userInfo.role))) {
       await dispatch(getTasksAll({ status: statusToUse, filters: filters }));
@@ -73,15 +115,17 @@ const Tasks = () => {
 
   useEffect(() => {
     if (userInfo.id && userInfo.role) {
-      fetchTasks(currentStatus, currentFilters).then(() =>
+      fetchTasks(currentStatus, effectiveFilters).then(() =>
         setInitialized(true),
       );
     }
-  }, [currentStatus, userInfo]);
+  }, [currentStatus, effectiveFilters, userInfo.id, userInfo.role]);
 
   useEffect(() => {
-    fetchTasks(currentStatus, currentFilters);
-  }, [currentFilters]);
+    if (userInfo.id && userInfo.role) {
+      fetchTasks(currentStatus, effectiveFilters);
+    }
+  }, [currentFilters, scannedZoneIdValue, userInfo.id, userInfo.role]);
 
   return (
     <View style={styles.container}>
@@ -89,8 +133,8 @@ const Tasks = () => {
         <Header
           onStatusPress={handleStatusPress}
           activeStatus={currentStatus}
-          currentFilters={currentFilters}
-          setCurrentFilters={setCurrentFilters}
+          currentFilters={effectiveFilters}
+          setCurrentFilters={handleSetCurrentFilters}
           searchText={searchText}
           onSearchChange={setSearchText}
         />
@@ -101,8 +145,9 @@ const Tasks = () => {
         ) : filteredTasks?.length > 0 ? (
           <TasksList
             tasks={filteredTasks}
+            scannedZoneId={scannedZoneIdValue}
             onRefresh={() => {
-              fetchTasks(currentStatus, currentFilters);
+              fetchTasks(currentStatus, effectiveFilters);
             }}
           />
         ) : (
@@ -112,7 +157,7 @@ const Tasks = () => {
             </TextUI>
             <ButtonUI
               onPress={() => {
-                fetchTasks(currentStatus, currentFilters);
+                fetchTasks(currentStatus, effectiveFilters);
               }}
               style={styles.btnReset}
             >

@@ -35,9 +35,6 @@ export default function ZoneDeepLinkHandler() {
     // Отмечаем, что запрос начался
     requestStartedRef.current = true;
 
-    console.log("id_user", userInfo.id);
-    console.log("id_zone", id);
-
     dispatch(
       getZoneByID({
         id_user: userInfo.id,
@@ -57,14 +54,13 @@ export default function ZoneDeepLinkHandler() {
 
     if (status === "succeeded" && currentTask) {
       navigationDoneRef.current = true;
-      const taskId = encodeURIComponent(String(currentTask.id));
-      router.push(`/(tabs)/tasks/${taskId}`);
+      router.replace(`/(tabs)/tasks?scannedZoneId=${encodeURIComponent(id)}`);
     } else if (status === "failed" && requestStartedRef.current) {
       // Перенаправляем на индекс только если это результат текущего запроса
       navigationDoneRef.current = true;
-      router.push(`/(tabs)/tasks`);
+      router.replace(`/(tabs)/tasks`);
     }
-  }, [status, currentTask]);
+  }, [status, currentTask, id]);
 
   return null;
 }

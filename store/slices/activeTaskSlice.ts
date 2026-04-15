@@ -30,6 +30,14 @@ const saveToStorage = async (state: ActiveTaskState) => {
   }
 };
 
+const getElapsedTime = (state: ActiveTaskState) => {
+  if (!state.isRunning || !state.startTime) {
+    return state.currentTime;
+  }
+
+  return state.currentTime + Math.floor((Date.now() - state.startTime) / 1000);
+};
+
 // Загрузить состояние из AsyncStorage
 export const loadActiveTask = createAsyncThunk(
   "activeTask/load",
@@ -39,18 +47,16 @@ export const loadActiveTask = createAsyncThunk(
 
       if (saved) {
         const parsed = JSON.parse(saved) as ActiveTaskState;
-        // Если таймер был запущен, рассчитываем прошедшее время
-        if (parsed.isRunning && parsed.startTime) {
-          const now = Date.now();
-          const elapsedSeconds = Math.floor((now - parsed.startTime) / 1000);
-          const totalTime = parsed.currentTime + elapsedSeconds;
 
+        if (parsed.isRunning && parsed.startTime) {
           return {
             ...parsed,
-            currentTime: totalTime,
-            startTime: now,
+            currentTime: getElapsedTime(parsed),
+            startTime: Date.now(),
+            loading: false,
           };
         }
+
         return parsed;
       }
 
@@ -106,15 +112,12 @@ export const stopTaskTimer = createAsyncThunk(
     const state = thunkAPI.getState() as { activeTask: ActiveTaskState };
     const currentState = state.activeTask;
 
-    const elapsedSeconds = currentState.startTime
-      ? Math.floor((Date.now() - currentState.startTime) / 1000)
-      : currentState.currentTime;
-
     const newState: ActiveTaskState = {
       ...currentState,
       isRunning: false,
-      currentTime: elapsedSeconds,
-      startTime: Date.now(),
+      currentTime: getElapsedTime(currentState),
+      startTime: null,
+      loading: false,
     };
 
     await saveToStorage(newState);
@@ -146,18 +149,14 @@ export const pauseTaskTimer = createAsyncThunk<
   const state = thunkAPI.getState() as { activeTask: ActiveTaskState };
   const currentState = state.activeTask;
 
-  // Используем переданное время или рассчитываем текущее прошедшее время
-  const currentTimeValue =
-    payload.currentTime ??
-    (currentState.startTime
-      ? currentState.currentTime +
-        Math.floor((Date.now() - currentState.startTime) / 1000)
-      : currentState.currentTime);
+  const currentTimeValue = payload.currentTime ?? getElapsedTime(currentState);
 
   const newState: ActiveTaskState = {
     ...currentState,
     isRunning: false,
     currentTime: currentTimeValue,
+    startTime: null,
+    loading: false,
   };
 
   await saveToStorage(newState);
@@ -174,13 +173,7 @@ export const updateTimer = createAsyncThunk(
     const state = thunkAPI.getState() as { activeTask: ActiveTaskState };
     const currentState = state.activeTask;
 
-    if (currentState.isRunning && currentState.startTime) {
-      const now = Date.now();
-      const elapsedSeconds = Math.floor((now - currentState.startTime) / 1000);
-      return elapsedSeconds;
-    }
-
-    return currentState.currentTime;
+    return getElapsedTime(currentState);
   }
 );
 

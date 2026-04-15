@@ -1,37 +1,34 @@
 import HeaderItem from "@/components/Header/HeaderItem";
 import ButtonUI from "@/components/ui/Button/ButtonUI";
-import IconCheckCircle from "@/components/ui/Icons/IconCheckCircle";
 import IconDesc from "@/components/ui/Icons/IconDesc";
 import IconFinish from "@/components/ui/Icons/iconFinish";
 import ImageSlider from "@/components/ui/ImageSlider/ImageSlider";
 import Preloader from "@/components/ui/Preloader/Preloader";
 import TextUI from "@/components/ui/Text/Text";
 import { COLORS } from "@/constants/colors";
-import {
-  startTaskTimer,
-  updateTimerSync,
-} from "@/store/slices/activeTaskSlice";
+import { startTaskTimer } from "@/store/slices/activeTaskSlice";
 import { getTaskById } from "@/store/slices/tasksSlice";
-import { clearCurrentTask } from "@/store/slices/zonesSlice";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { ITask } from "@/types/typesMobile/tasks";
 import { checkRoleAdmin } from "@/utils/checkRoleAdmin";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const TaskScreen: React.FC<ITask> = () => {
-  const { id } = useLocalSearchParams();
+  const { id, scannedZoneId } = useLocalSearchParams<{
+    id: string;
+    scannedZoneId?: string;
+  }>();
 
   const router = useRouter();
 
   const dispatch = useAppDispatch();
 
-  const { currentTask } = useAppSelector((state) => state.zones); // если сканируем qr, currentTask  будет содержать task объект
   const { userInfo } = useAppSelector((state) => state.auth);
   const { task, loading } = useAppSelector((state) => state.tasks);
-  const { taskId, currentTime, isRunning } = useAppSelector(
+  const { taskId, currentTime, isRunning, startTime } = useAppSelector(
     (state) => state.activeTask,
   );
 
@@ -40,12 +37,26 @@ const TaskScreen: React.FC<ITask> = () => {
 
   const isAdmin = checkRoleAdmin(Number(userInfo.role));
 
-  // Проверяем, является ли эта задача активной
-  const isCurrentActiveTask = taskId === id;
-
-  const [isAfterScanning, setAfterScanning] = useState(false);
+  const scannedZoneIdValue = Array.isArray(scannedZoneId)
+    ? scannedZoneId[0]
+    : scannedZoneId;
+  const isCurrentActiveTask = String(taskId) === String(id);
+  const isTaskRunning = isCurrentActiveTask && isRunning;
+  const hasAnotherActiveTask = !!taskId && isRunning && !isCurrentActiveTask;
+  const canStartTask =
+    !hasAnotherActiveTask &&
+    (isCurrentActiveTask ||
+      (!!task && String(task.id_zone) === String(scannedZoneIdValue)));
 
   const handleStart = async () => {
+    if (!canStartTask) {
+      Alert.alert(
+        "Сначала отсканируйте QR зоны",
+        "Без сканирования начать задачу нельзя",
+      );
+      return;
+    }
+
     if (id) {
       await dispatch(
         startTaskTimer({
@@ -58,7 +69,6 @@ const TaskScreen: React.FC<ITask> = () => {
 
   const handleStop = async () => {
     // переходим на страницу завершения, таймер продолжает идти
-    dispatch(updateTimerSync(localTimer));
     router.push(`/tasks/finish?id=${id}&timer=${localTimer}`);
   };
 
@@ -68,17 +78,26 @@ const TaskScreen: React.FC<ITask> = () => {
     return hours * 3600 + minutes * 60 + seconds;
   };
 
-  // для вывода времени в нашем формате
-  const formatTime = (time: number) => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = time % 60;
+  const formatTimer = (timeInSeconds: number) => {
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = timeInSeconds % 60;
 
-    const paddedHours = String(hours).padStart(2, "0");
-    const paddedMinutes = String(minutes).padStart(2, "0");
-    const paddedSeconds = String(seconds).padStart(2, "0");
+    return [hours, minutes, seconds]
+      .map((value) => String(value).padStart(2, "0"))
+      .join(":");
+  };
 
-    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+  const getActualActiveTaskTime = () => {
+    if (!isCurrentActiveTask) {
+      return currentTime;
+    }
+
+    if (!isRunning || !startTime) {
+      return currentTime;
+    }
+
+    return currentTime + Math.floor((Date.now() - startTime) / 1000);
   };
 
   useEffect(() => {
@@ -87,54 +106,44 @@ const TaskScreen: React.FC<ITask> = () => {
     }
   }, [id, dispatch]);
 
-  useEffect(() => {
-    if (currentTask) {
-      setAfterScanning(true);
-    }
-  }, [currentTask]);
-
-  // при размонтировании компонента currentTaskID будем очищать
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        dispatch(clearCurrentTask());
-      };
-    }, []),
-  );
-
   // Инициализируем таймер каждый раз при загрузке новой задачи
   useEffect(() => {
     if (task) {
-      // Если задача активна, используем время из Redux, иначе из базы данных
-      const initialTime =
-        isCurrentActiveTask && currentTime !== 0
-          ? currentTime
-          : task.time_current
-            ? parseTimeToSeconds(task.time_current)
-            : 0;
+      const initialTime = isCurrentActiveTask
+        ? getActualActiveTaskTime()
+        : task.time_current
+          ? parseTimeToSeconds(task.time_current)
+          : 0;
 
       setLocalTimer(Number(initialTime));
     }
-  }, [task, currentTime]);
+  }, [task, currentTime, isCurrentActiveTask, isRunning, startTime]);
 
   // Синхронизируем с Redux когда задача активна (включая паузу)
   useEffect(() => {
     if (isCurrentActiveTask) {
-      setLocalTimer(currentTime);
+      setLocalTimer(getActualActiveTaskTime());
     }
-  }, [currentTime, isCurrentActiveTask]);
+  }, [currentTime, isCurrentActiveTask, isRunning, startTime]);
 
   // эффект для локального таймера в UI - только инкремент каждую секунду
   useEffect(() => {
-    if (isRunning && !timerIntervalRef.current) {
+    if (isTaskRunning && !timerIntervalRef.current) {
       timerIntervalRef.current = setInterval(() => {
         setLocalTimer((prev) => prev + 1);
       }, 1000);
-    } else if (!isRunning && timerIntervalRef.current) {
+    } else if (!isTaskRunning && timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
-  }, [isRunning]);
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [isTaskRunning]);
 
   if (task) {
     return (
@@ -143,7 +152,9 @@ const TaskScreen: React.FC<ITask> = () => {
           <View style={styles.container}>
             <View style={styles.headerWrapper}>
               <HeaderItem
-                isRunningTimer={isRunning}
+                isRunningTimer={isTaskRunning}
+                isActiveTask={isCurrentActiveTask}
+                scannedZoneId={scannedZoneIdValue}
                 edit={true}
                 mode={"fullScreenModal"}
                 name={task.name_zone}
@@ -272,33 +283,33 @@ const TaskScreen: React.FC<ITask> = () => {
                     </>
                   ) : undefined}
 
+                  {/* <View>
+                    <View style={styles.taskCaption}>
+                      <IconDesc />
+                      <TextUI style={styles.taskCaptionText}>
+                        Временно показываем таймер, для тестов
+                      </TextUI>
+                    </View>
+                    <TextUI>{formatTimer(localTimer)}</TextUI>
+                  </View> */}
+
                   {!isAdmin && task.status !== 2 && (
                     <View style={styles.taskControls}>
-                      {/* {isRunning && isCurrentActiveTask && (
-                        <TextUI style={styles.timer}>
-                          Таймер: {formatTime(localTimer)}
+                      {!canStartTask && (
+                        <TextUI style={styles.scanNotice}>
+                          {hasAnotherActiveTask
+                            ? "У вас уже запущена другая задача."
+                            : "Чтобы начать, сначала отсканируйте QR этой зоны."}
                         </TextUI>
-                      )} */}
-
-                      {(isAfterScanning || isRunning) && (
-                        <ButtonUI
-                          style={styles.btn}
-                          onPress={!isRunning ? handleStart : handleStop}
-                        >
-                          {isRunning ? (
-                            <View style={styles.btnContent}>
-                              <IconCheckCircle />
-                              <TextUI style={styles.btnContentText}>
-                                Завершить
-                              </TextUI>
-                            </View>
-                          ) : (
-                            <TextUI style={styles.btnContentText}>
-                              Начать
-                            </TextUI>
-                          )}
-                        </ButtonUI>
                       )}
+
+                      <ButtonUI
+                        style={styles.btn}
+                        disabled={!canStartTask}
+                        onPress={isTaskRunning ? handleStop : handleStart}
+                      >
+                        {isTaskRunning ? "Завершить" : "Начать"}
+                      </ButtonUI>
                     </View>
                   )}
                 </View>
@@ -311,6 +322,8 @@ const TaskScreen: React.FC<ITask> = () => {
       </SafeAreaProvider>
     );
   }
+
+  return <Preloader />;
 };
 
 const styles = StyleSheet.create({
@@ -392,29 +405,13 @@ const styles = StyleSheet.create({
     marginTop: "auto",
   },
 
-  btnContent: {
-    alignItems: "center",
-    gap: 6,
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-
-  btnContentText: {
-    fontFamily: "Manrope-SemiBold",
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: "500",
-    textAlign: "center",
-  },
-
-  timer: {
-    marginTop: "auto",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-
   taskControls: {
     marginTop: "auto",
+    gap: 12,
+  },
+  scanNotice: {
+    textAlign: "center",
+    color: COLORS.tabNotActiveColor,
   },
 });
 
