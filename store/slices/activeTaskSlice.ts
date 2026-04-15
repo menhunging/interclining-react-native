@@ -65,7 +65,7 @@ export const loadActiveTask = createAsyncThunk(
       console.error("Error loading active task from storage:", error);
       return initialState;
     }
-  }
+  },
 );
 
 // Запустить таймер для задачи
@@ -73,7 +73,7 @@ export const startTaskTimer = createAsyncThunk(
   "activeTask/start",
   async (
     { taskId, initialTime }: { taskId: string; initialTime: string },
-    thunkAPI
+    thunkAPI,
   ) => {
     const state: ActiveTaskState = {
       taskId,
@@ -102,7 +102,7 @@ export const startTaskTimer = createAsyncThunk(
     // });
 
     return state;
-  }
+  },
 );
 
 // Остановить таймер
@@ -122,7 +122,7 @@ export const stopTaskTimer = createAsyncThunk(
 
     await saveToStorage(newState);
     return newState;
-  }
+  },
 );
 
 // Завершить задачу (очистить состояние)
@@ -131,7 +131,7 @@ export const completeTask = createAsyncThunk(
   async (_, thunkAPI) => {
     await AsyncStorage.removeItem(ACTIVE_TASK_KEY);
     return initialState;
-  }
+  },
 );
 
 // Пауза таймера (останавливает но сохраняет время)
@@ -174,7 +174,7 @@ export const updateTimer = createAsyncThunk(
     const currentState = state.activeTask;
 
     return getElapsedTime(currentState);
-  }
+  },
 );
 
 const activeTaskSlice = createSlice({

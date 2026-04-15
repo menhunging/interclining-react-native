@@ -28,15 +28,16 @@
       }
     },
     "deepLinks": true,
-    "permissions": {
-      "CAMERA": {
-        "description": "Allow app to access camera for QR code scanning"
-      }
-    },
     "android": {
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.menhunging.mytestreactnative2",
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -46,10 +47,7 @@
               "host": "in-cleaning.ru"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         },
         {
           "action": "VIEW",
@@ -58,10 +56,7 @@
               "scheme": "my-test-react-native-2"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -71,6 +66,13 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Разрешите приложению использовать камеру для сканирования QR-кодов и фотоотчета",
+          "recordAudioAndroid": false
+        }
+      ],
       [
         "expo-splash-screen",
         {

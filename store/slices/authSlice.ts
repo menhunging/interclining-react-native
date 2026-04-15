@@ -29,7 +29,7 @@ export const loginUser = createAsyncThunk<
 
     if (!success || typeof message === "string") {
       return thunkAPI.rejectWithValue(
-        typeof message === "string" ? message : "Ошибка авторизации"
+        typeof message === "string" ? message : "Ошибка авторизации",
       );
     }
 
@@ -41,7 +41,7 @@ export const loginUser = createAsyncThunk<
   } catch (err: any) {
     const error = err as { response?: { data?: { message?: string } } };
     return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Ошибка авторизации"
+      error.response?.data?.message || "Ошибка авторизации",
     );
   }
 });
@@ -57,7 +57,7 @@ export const authUser = createAsyncThunk<
 
     if (!success || typeof message === "string") {
       return thunkAPI.rejectWithValue(
-        typeof message === "string" ? message : "Ошибка авторизации"
+        typeof message === "string" ? message : "Ошибка авторизации",
       );
     }
 
@@ -65,7 +65,7 @@ export const authUser = createAsyncThunk<
   } catch (err) {
     const error = err as { response?: { data?: { message?: string } } };
     return thunkAPI.rejectWithValue(
-      error.response?.data?.message || "Ошибка при проверке токена"
+      error.response?.data?.message || "Ошибка при проверке токена",
     );
   }
 });
